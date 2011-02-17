@@ -25,11 +25,39 @@
 
 using namespace std;
 
+
+// Forward declaration of triangle class
+class triangle;
+
+// global variables -- used for communication between callback functions
+
 vec3df light_coord( -5.0, 2.0, 5.0 );
 
-//float modelview[16];
-//mat4x4f mv_mat;
+int num_triangles;
+triangle *tri = NULL;
+int num_points;
+vec3df *v_list = NULL;
 
+// window ID
+int wid;
+
+// default (initial) window size
+#define VPD_DEFAULT 800
+
+// size of the window 
+int width = VPD_DEFAULT;
+int height = VPD_DEFAULT;
+
+bool is_left_mouse_button_down = false;
+bool is_middle_mouse_button_down = false;
+
+GLfloat zoom;   // this one controls the field of view
+
+mat4x4d get_rotation();  // get the rotation matrix to use
+
+
+// Class to hold each triangle for the model
+// Calculates the shadow polygon
 class triangle
 {   
 public:
@@ -56,30 +84,27 @@ public:
     void calc_normal() { normal = (get(1) - get(0))^(get(2) - get(0)); }
     
 	// Determine if the triangle is lit
-    bool lit()
+    bool lit(vec3df &light)
     {
-        if( (( light_coord - get(0) ) * normal) > 0 )
+        if( (( light - get(0) ) * normal) > 0 )
 			return true;
 		return false;
     }
 	
 	// Calculate the shadow quads and normals
-	void calc_shadow()
+	void calc_shadow(vec3df &light)
 	{
 		for(int v=0; v<3; v++)
 		{
-			shadow_pair[v] = get(v) - light_coord;
+			shadow_pair[v] = get(v) - light;
 			shadow_normal[v] = (get((v+1)%3) - get(v))^(shadow_pair[v] - get(v));
 		}
 	}
 	
 };
 
-int num_triangles;
-triangle *tri = NULL;
-int num_points;
-vec3df *v_list = NULL;
 
+// Read a model in from a file
 void read_file(char *filename) 
 {
     std::ifstream file;
@@ -116,7 +141,7 @@ void read_file(char *filename)
     }
     
     // Multiply by the inverse since vec3d only overloads *
-   tmax = 4/tmax;
+	tmax = 4/tmax;
     
     // Normalize each vertex
     for(int i=0; i<num_points; i++)
@@ -137,34 +162,7 @@ void read_file(char *filename)
 }
 
 
-
-/* --------------------------------------------- */
-
-// global variables -- used for communication between callback functions
-
-
-
-// window ID
-int wid;
-
-// default (initial) window size
-#define VPD_DEFAULT 800
-
-// size of the window 
-int width = VPD_DEFAULT;
-int height = VPD_DEFAULT;
-
-
-bool is_left_mouse_button_down = false;
-bool is_middle_mouse_button_down = false;
-
-GLfloat zoom;   // this one controls the field of view
-
-mat4x4d get_rotation();  // get the rotation matrix to use
-
-/* --------------------------------------------- */
-
-
+// Set the material properties
 GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
 {
     // this is a sample function that sets the material properties
@@ -182,8 +180,8 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambient_and_diffuse);
 }
 
-/* --------------------------------------------- */
 
+// Draw the triangles of the models
 void draw_model()
 {    	
     glBegin(GL_TRIANGLES);
@@ -202,6 +200,8 @@ void draw_model()
     glEnd();
 }
 
+
+// Draw a shadow polygon for each triangle in shadow
 void draw_shadow_polygon()
 {
 	glBegin(GL_QUADS);
@@ -210,10 +210,10 @@ void draw_shadow_polygon()
     for(int i=0; i<num_triangles; i++)
     {
 		// If the triangle is in shadow 
-		if( !tri[i].lit() )
+		if( !tri[i].lit( light_coord ) )
         {
 			// Tell the triangle to calculate it's shadow
-			tri[i].calc_shadow();
+			tri[i].calc_shadow(light_coord);
 			
 			// For each face of the shadow
 			for(int v=0; v<3; v++)
@@ -240,65 +240,52 @@ void draw_shadow_polygon()
     glEnd();	
 }
 
- /*--------------------------------------------- */
 
+// Draw the models in the scene
 void draw_scene ( )
-{
-	// Grabbing the modelview matrix isn't necessary yet
-    //glGetFloatv(GL_MODELVIEW_MATRIX, mv_mat.pointer() );
-	//glGetFloatv(GL_MODELVIEW_MATRIX, modelview );
-	
+{	
+	// Draw model from file
 	set_material_properties(1,1,1);		// set color to GREY
 	glPushMatrix();						// Save the current matrix
     draw_model();						// Draw the model 
     glPopMatrix();						// Restore the matrix
 	
+	// Draw shadow volume
 	set_material_properties(.5,.5,1);	// set color to BLUE
 	glPushMatrix(); 
     draw_shadow_polygon();				// Draw the shadow polygons
     glPopMatrix(); 
-	
 }
-/* --------------------------------------------- */
 
-void draw_light(bool on)
+
+// Draw the light source
+void draw_light()
 {
-	if( on )
-	{
-		glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
-		//glLoadIdentity();            // Comment out to "fixate" the light
-		
-		// Location of the light source
-		GLfloat light_position[] = { light_coord[0], light_coord[1], light_coord[2], 0 };
-		
-		// Load the location
-		glLightfv(GL_LIGHT0, GL_POSITION, light_position);	
-		
-		// Initialize light source
-		GLfloat light_ambient[] =  { .1, .1, .1, 1.0 };
-		GLfloat light_diffuse[] = { .7, .7, .7, 1.0 };
-		GLfloat light_specular[] = { 0, 0, 0, 1.0 };	
-		glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-		
-		// Attenuation coefficients 
-		glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,1.0);  // no 
-		glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.0);    // attenuation
-		glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.0); // 1/(0*d^2+0*d+1)=1 attenuation factor		
-	}
-	else
-	{
-		GLfloat zeroarray[] = {0,0,0,0};
-		glLightfv(GL_LIGHT0, GL_AMBIENT, zeroarray);
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, zeroarray);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, zeroarray);
-	}	
+	glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
+	//glLoadIdentity();            // Comment out to "fixate" the light
 	
+	// Location of the light source
+	GLfloat light_position[] = { light_coord[0], light_coord[1], light_coord[2], 0 };
+	
+	// Load the location
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);	
+	
+	// Initialize light source
+	GLfloat light_ambient[] =  { .1, .1, .1, 1.0 };
+	GLfloat light_diffuse[] = { .7, .7, .7, 1.0 };
+	GLfloat light_specular[] = { 0, 0, 0, 1.0 };	
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+	
+	// Attenuation coefficients 
+	glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,1.0);  // no 
+	glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.0);    // attenuation
+	glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.0); // 1/(0*d^2+0*d+1)=1 attenuation factor		
 }
 
-/* draw the scene */
 
+// Draw the scene
 GLvoid draw()
 {
     // ensure we're drawing to the correct GLUT window 
@@ -307,9 +294,8 @@ GLvoid draw()
     // clear the color buffers and stencil buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     
-	draw_light(true);
+	draw_light();
 
-    
     // turn back-face culling on 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -322,7 +308,7 @@ GLvoid draw()
     glEnable(GL_NORMALIZE);
     
     // clear color buffer to white 
-    glClearColor(1.0, 1.0, 1.0, 1.0);
+    //glClearColor(1.0, 1.0, 1.0, 1.0);
     
     // Enable depth test  
     glEnable(GL_DEPTH_TEST);
@@ -343,10 +329,9 @@ GLvoid draw()
     //  ON THE RIGHT
     //  at this point, modelview matrix = identity
     
-    glTranslatef(0,0,-20);   // move the cube `forward' with respect to the camera
+    glTranslatef(0,0,-20);   // Move the model 'forward' with respect to the camera
     
     // at this point, modelview matrix = T [translation by (0,0,-20)]
-    
     mat4x4d R = get_rotation();
     glMultMatrixd(R.pointer());   // this applies a rotation R that is computed from the trackball UI
     
@@ -367,22 +352,20 @@ GLvoid draw()
     glutSwapBuffers();
 }
 
-/* --------------------------------------------- */
-
 
 // variables used for computing rotation
+
 vec3df point_on_trackball_below_cursor(0,0,0);   // tracks point on trackball below mouse cursor
 vec3df last_down(0,0,0);                         // point on trackball where the button went down
 mat4x4d finished_rotation = Identity<double>();  // superposition of all finished rotations
+
 // finishing a rotation == releasing the left mouse button
 // variable used to update zoom factor 
 GLint mprev[2];   // coordinates of last [mouse movement with middle button down] event
 
-/* ************ */
 
 // rotation being specified by the user
 // if left mouse button is down, the return value is Id
-
 mat4x4d get_current_rotation()
 {
     if (point_on_trackball_below_cursor==last_down)
@@ -395,21 +378,17 @@ mat4x4d get_current_rotation()
     }
 }
 
-/* ************ */
 
 // rotation to be applied as a part of the modelview matrix
-
 mat4x4d get_rotation()
 {
     return finished_rotation*get_current_rotation();
 }
 
-/* ************ */
 
 // computes the point on the trackball below the pixel (x,y)
 // assumes trackball is a unit ball centered at the origin and that the 
 // trackball is projected in parallel fashion
-
 vec3d<GLfloat> scr23d ( GLint x, GLint y )
 {
     float xx = 2*((float)x)/width-1;
@@ -429,10 +408,8 @@ vec3d<GLfloat> scr23d ( GLint x, GLint y )
     return vec3d<float>(xx,yy,z);      
 }
 
-/* ************ */
 
 // function called when a mouse button is pressed or released
-
 GLvoid mouse_button(GLint btn, GLint state, GLint x, GLint y)
 {
     switch (btn)
@@ -476,10 +453,8 @@ GLvoid mouse_button(GLint btn, GLint state, GLint x, GLint y)
     
 }
 
-/* --------------------------------------------- */
 
 // function called when mouse is moving with a button down
-
 GLvoid button_motion(GLint x, GLint y)
 {
     if (is_left_mouse_button_down)
@@ -500,10 +475,8 @@ GLvoid button_motion(GLint x, GLint y)
     return;
 }
 
-/* --------------------------------------------- */
 
-/* handle keyboard events; here, just exit if ESC is hit */
-
+// handle keyboard events; here, just exit if ESC is hit
 GLvoid keyboard(GLubyte key, GLint x, GLint y)
 {
     switch(key)
@@ -517,10 +490,8 @@ GLvoid keyboard(GLubyte key, GLint x, GLint y)
     }
 }
 
-/* --------------------------------------------- */
 
-/* handle resizing the glut window */
-
+// handle resizing the glut window
 GLvoid reshape(GLint vpw, GLint vph)
 {
     glutSetWindow(wid);
@@ -532,8 +503,8 @@ GLvoid reshape(GLint vpw, GLint vph)
     glutPostRedisplay();   // add display event to queue
 }
 
-/* --------------------------------------------- */
 
+// Pass functions to OpenGL's main loop
 GLint main(int argc, char **argv)
 {  
     // need this call to initialize glut/GL -- don't execute any OpenGL code before this call!
@@ -564,10 +535,7 @@ GLint main(int argc, char **argv)
     glutMotionFunc(button_motion);         // mouse motion w/ button down
     
     // Read in the model file specified on the command line
-    //read_file(argv[1]);
-	cout << "\n" << argv[1];
     read_file(argv[1]);
-	
 	
     // function to draw contents of our window -- 
     //  this is where most of your work will focus!
