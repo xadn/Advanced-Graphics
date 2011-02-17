@@ -269,7 +269,6 @@ void draw_scene ( )
     glPopMatrix(); 
 	
 }
-
 /* --------------------------------------------- */
 
 /* draw the scene */
