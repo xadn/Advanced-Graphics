@@ -165,8 +165,6 @@ mat4x4d get_rotation();  // get the rotation matrix to use
 /* --------------------------------------------- */
 
 
-
-
 GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
 {
     // this is a sample function that sets the material properties
@@ -263,6 +261,42 @@ void draw_scene ( )
 }
 /* --------------------------------------------- */
 
+void draw_light(bool on)
+{
+	if( on )
+	{
+		glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
+		//glLoadIdentity();            // Comment out to "fixate" the light
+		
+		// Location of the light source
+		GLfloat light_position[] = { light_coord[0], light_coord[1], light_coord[2], 0 };
+		
+		// Load the location
+		glLightfv(GL_LIGHT0, GL_POSITION, light_position);	
+		
+		// Initialize light source
+		GLfloat light_ambient[] =  { .1, .1, .1, 1.0 };
+		GLfloat light_diffuse[] = { .7, .7, .7, 1.0 };
+		GLfloat light_specular[] = { 0, 0, 0, 1.0 };	
+		glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+		
+		// Attenuation coefficients 
+		glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,1.0);  // no 
+		glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.0);    // attenuation
+		glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.0); // 1/(0*d^2+0*d+1)=1 attenuation factor		
+	}
+	else
+	{
+		GLfloat zeroarray[] = {0,0,0,0};
+		glLightfv(GL_LIGHT0, GL_AMBIENT, zeroarray);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, zeroarray);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, zeroarray);
+	}	
+	
+}
+
 /* draw the scene */
 
 GLvoid draw()
@@ -270,40 +304,11 @@ GLvoid draw()
     // ensure we're drawing to the correct GLUT window 
     glutSetWindow(wid);
     
-    // GLfloat *trans_matrix;
-    // glGetFloatv(GL_MODELVIEW_MATRIX, trans_matrix);
-    
-    // clear the color buffers 
-    // clearing stencil buffer is not really necessary for the sample code,
-    // but you'll need it in the shadow volume implementation
+    // clear the color buffers and stencil buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     
-    {
-        // in this block, we initialize light source #0
-        GLfloat light_ambient[] = { .1, .1, .1, 1.0 };
-        GLfloat light_diffuse[] = { .7, .7, .7, 1.0 };
-        GLfloat light_specular[] = { 0, 0, 0, 1.0 };
-        
-        GLfloat light_position[] = { light_coord[0], light_coord[1], light_coord[2], 0 };
-        
-        // set light intensities and attenuation coefficients
-        glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-        glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,1.0);  // no 
-        glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.0);    // attenuation
-        glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.0); // 1/(0*d^2+0*d+1)=1 attenuation factor
-        
-        // modelview matrix is applied to the light source location
-        // we want to keep light position fixed here -- therefore, we 
-        // set the modelview matrix to Identity before the glLight* call below
-        
-        glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
-		
-		// comment the identity matrix out to "fixate" the light position
-        glLoadIdentity();            // load identity to current matrix
-        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    }
+	draw_light(true);
+
     
     // turn back-face culling on 
     glEnable(GL_CULL_FACE);
