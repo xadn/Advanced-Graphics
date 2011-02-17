@@ -26,7 +26,9 @@
 using namespace std;
 
 vec3df light_coord( -5.0, 2.0, 5.0 );
-mat4x4f mv_mat;
+
+//float modelview[16];
+//mat4x4f mv_mat;
 
 class triangle
 {   
@@ -185,17 +187,12 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
 /* --------------------------------------------- */
 
 void draw_model()
-{
-    // Grabbing the modelview matrix isn't necessary yet
-	
-    //glGetFloatv(GL_MODELVIEW_MATRIX, mv_mat.pointer() );
-    //cout << mv_mat << "\n";
-    
+{    	
     glBegin(GL_TRIANGLES);
     
 	// For each triangle
     for(int i=0; i<num_triangles; i++)
-    {
+    {		
 		// Set the normal
 		glNormal3f( tri[i].normal[0], tri[i].normal[1], tri[i].normal[2] );
 		
@@ -245,20 +242,15 @@ void draw_shadow_polygon()
     glEnd();	
 }
 
-/* --------------------------------------------- */
+ /*--------------------------------------------- */
 
 void draw_scene ( )
 {
-    // draw white/greyish
-    //draw_cube();                          // cube
-    
-    // the rest of this procedure adds smaller
-    // cubes of different colors centered at the corners of the white cube below;
-    // note that the draw_cube function is used to draw each cube
-    // however, modelview matrix and material is changed before each call,
-    //  so the resulting cubes look different 
-    
-    set_material_properties(1,1,1);		// set color to GREY
+	// Grabbing the modelview matrix isn't necessary yet
+    //glGetFloatv(GL_MODELVIEW_MATRIX, mv_mat.pointer() );
+	//glGetFloatv(GL_MODELVIEW_MATRIX, modelview );
+	
+	set_material_properties(1,1,1);		// set color to GREY
 	glPushMatrix();						// Save the current matrix
     draw_model();						// Draw the model 
     glPopMatrix();						// Restore the matrix
@@ -309,7 +301,7 @@ GLvoid draw()
         glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
 		
 		// comment the identity matrix out to "fixate" the light position
-       // glLoadIdentity();            // load identity to current matrix
+        glLoadIdentity();            // load identity to current matrix
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     }
     
