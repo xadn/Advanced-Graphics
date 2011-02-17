@@ -1,0 +1,223 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7E967A361305111B00F72AFE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E967A351305111B00F72AFE /* main.cpp */; };
+		7E967A3F1305114500F72AFE /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E967A3D1305114500F72AFE /* GLUT.framework */; };
+		7E967A401305114500F72AFE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E967A3E1305114500F72AFE /* OpenGL.framework */; };
+		7E967A421305115400F72AFE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E967A411305115400F72AFE /* Cocoa.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7E967A2F1305111B00F72AFE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		7E967A311305111B00F72AFE /* ShadowVolume */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ShadowVolume; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E967A351305111B00F72AFE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		7E967A3D1305114500F72AFE /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		7E967A3E1305114500F72AFE /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		7E967A411305115400F72AFE /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		7E967A43130511DD00F72AFE /* mat4x4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mat4x4.h; sourceTree = "<group>"; };
+		7E967A44130511E600F72AFE /* vec3d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec3d.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7E967A2E1305111B00F72AFE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E967A421305115400F72AFE /* Cocoa.framework in Frameworks */,
+				7E967A3F1305114500F72AFE /* GLUT.framework in Frameworks */,
+				7E967A401305114500F72AFE /* OpenGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7E967A261305111B00F72AFE = {
+			isa = PBXGroup;
+			children = (
+				7E967A411305115400F72AFE /* Cocoa.framework */,
+				7E967A3D1305114500F72AFE /* GLUT.framework */,
+				7E967A3E1305114500F72AFE /* OpenGL.framework */,
+				7E967A341305111B00F72AFE /* ShadowVolume */,
+				7E967A321305111B00F72AFE /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7E967A321305111B00F72AFE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7E967A311305111B00F72AFE /* ShadowVolume */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7E967A341305111B00F72AFE /* ShadowVolume */ = {
+			isa = PBXGroup;
+			children = (
+				7E967A351305111B00F72AFE /* main.cpp */,
+				7E967A44130511E600F72AFE /* vec3d.h */,
+				7E967A43130511DD00F72AFE /* mat4x4.h */,
+			);
+			path = ShadowVolume;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7E967A301305111B00F72AFE /* ShadowVolume */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E967A3A1305111B00F72AFE /* Build configuration list for PBXNativeTarget "ShadowVolume" */;
+			buildPhases = (
+				7E967A2D1305111B00F72AFE /* Sources */,
+				7E967A2E1305111B00F72AFE /* Frameworks */,
+				7E967A2F1305111B00F72AFE /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ShadowVolume;
+			productName = ShadowVolume;
+			productReference = 7E967A311305111B00F72AFE /* ShadowVolume */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7E967A281305111B00F72AFE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				ORGANIZATIONNAME = "Colorado School of Mines";
+			};
+			buildConfigurationList = 7E967A2B1305111B00F72AFE /* Build configuration list for PBXProject "ShadowVolume" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7E967A261305111B00F72AFE;
+			productRefGroup = 7E967A321305111B00F72AFE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7E967A301305111B00F72AFE /* ShadowVolume */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7E967A2D1305111B00F72AFE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E967A361305111B00F72AFE /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7E967A381305111B00F72AFE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		7E967A391305111B00F72AFE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		7E967A3B1305111B00F72AFE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_ENABLE_SSE3_EXTENSIONS = YES;
+				GCC_ENABLE_SSE41_EXTENSIONS = YES;
+				GCC_UNROLL_LOOPS = YES;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7E967A3C1305111B00F72AFE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_ENABLE_SSE3_EXTENSIONS = YES;
+				GCC_ENABLE_SSE41_EXTENSIONS = YES;
+				GCC_UNROLL_LOOPS = YES;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7E967A2B1305111B00F72AFE /* Build configuration list for PBXProject "ShadowVolume" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E967A381305111B00F72AFE /* Debug */,
+				7E967A391305111B00F72AFE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7E967A3A1305111B00F72AFE /* Build configuration list for PBXNativeTarget "ShadowVolume" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E967A3B1305111B00F72AFE /* Debug */,
+				7E967A3C1305111B00F72AFE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7E967A281305111B00F72AFE /* Project object */;
+}
