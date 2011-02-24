@@ -25,13 +25,13 @@
 
 using namespace std;
 
-
 // Forward declaration of triangle class
 class triangle;
 
 // global variables -- used for communication between callback functions
 
-vec3df light_coord( -5.0, 2.0, 5.0 );
+vec3df orig_light_coord( -5.0, 2.0, 5.0 );
+vec3df light_coord = orig_light_coord;
 
 int num_triangles;
 triangle *tri = NULL;
@@ -181,139 +181,9 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
 }
 
 
-// Draw the triangles of the models
-void draw_model()
-{    	
-    glBegin(GL_TRIANGLES);
-    
-	// For each triangle
-    for(int i=0; i<num_triangles; i++)
-    {		
-		// Set the normal
-		glNormal3f( tri[i].normal[0], tri[i].normal[1], tri[i].normal[2] );
-		
-		// Set each vertex in the triangle
-		for(int v=0; v<3; v++)
-			glVertex3f( tri[i].get(v, 0), tri[i].get(v, 1), tri[i].get(v, 2) );
-    }
-    
-    glEnd();
-}
-
-
-// Draw a shadow polygon for each triangle in shadow
-void draw_shadow_polygon()
+void apply_transform()
 {
-	glBegin(GL_QUADS);
-    
-	// For each triangle
-    for(int i=0; i<num_triangles; i++)
-    {
-		// If the triangle is in shadow 
-		if( !tri[i].lit( light_coord ) )
-        {
-			// Tell the triangle to calculate it's shadow
-			tri[i].calc_shadow(light_coord);
-			
-			// For each face of the shadow
-			for(int v=0; v<3; v++)
-			{
-				// Set the normal for each face of the shadow
-				glNormal3f( tri[i].shadow_normal[v][0], tri[i].shadow_normal[v][1], tri[i].shadow_normal[v][2] );
-				
-				// First vertex (from the triangle)
-				glVertex3f( tri[i].get(v, 0), tri[i].get(v, 1), tri[i].get(v, 2) );
-				
-				// Second vertex (next vertex from the triangle)
-				glVertex3f( tri[i].get((v+1)%3, 0), tri[i].get((v+1)%3, 1), tri[i].get((v+1)%3, 2) );
-				
-				// Third vertex (calculated from the first vertex)
-				glVertex4f(tri[i].shadow_pair[(v+1)%3][0], tri[i].shadow_pair[(v+1)%3][1], tri[i].shadow_pair[(v+1)%3][2], 0);
-				
-				// Forth vertex (calculated from the second vertex)
-				glVertex4f(tri[i].shadow_pair[v][0], tri[i].shadow_pair[v][1], tri[i].shadow_pair[v][2], 0);
-			}
-
-		}
-    }
-    
-    glEnd();	
-}
-
-
-// Draw the models in the scene
-void draw_scene ( )
-{	
-	// Draw model from file
-	set_material_properties(1,1,1);		// set color to GREY
-	glPushMatrix();						// Save the current matrix
-    draw_model();						// Draw the model 
-    glPopMatrix();						// Restore the matrix
-	
-	// Draw shadow volume
-	set_material_properties(.5,.5,1);	// set color to BLUE
-	glPushMatrix(); 
-    draw_shadow_polygon();				// Draw the shadow polygons
-    glPopMatrix(); 
-}
-
-
-// Draw the light source
-void draw_light()
-{
-	glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
-	//glLoadIdentity();            // Comment out to "fixate" the light
-	
-	// Location of the light source
-	GLfloat light_position[] = { light_coord[0], light_coord[1], light_coord[2], 0 };
-	
-	// Load the location
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);	
-	
-	// Initialize light source
-	GLfloat light_ambient[] =  { .1, .1, .1, 1.0 };
-	GLfloat light_diffuse[] = { .7, .7, .7, 1.0 };
-	GLfloat light_specular[] = { 0, 0, 0, 1.0 };	
-	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-	
-	// Attenuation coefficients 
-	glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,1.0);  // no 
-	glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.0);    // attenuation
-	glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.0); // 1/(0*d^2+0*d+1)=1 attenuation factor		
-}
-
-
-// Draw the scene
-GLvoid draw()
-{
-    // ensure we're drawing to the correct GLUT window 
-    glutSetWindow(wid);
-    
-    // clear the color buffers and stencil buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    
-	draw_light();
-
-    // turn back-face culling on 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    
-    // enable illumination and light #0
-    glEnable(GL_LIGHTING);  
-    glEnable(GL_LIGHT0);
-    
-    // automatically scale normals to unit length after transformation
-    glEnable(GL_NORMALIZE);
-    
-    // clear color buffer to white 
-    //glClearColor(1.0, 1.0, 1.0, 1.0);
-    
-    // Enable depth test  
-    glEnable(GL_DEPTH_TEST);
-    
-    // set the projection matrix 
+	// set the projection matrix 
     glMatrixMode(GL_PROJECTION);  // operate on projection matrix
     glLoadIdentity();
     // this places camera at the origin and directs it toward (0,0,-infinity)
@@ -338,17 +208,184 @@ GLvoid draw()
     // at this point, modelview matrix = T*R
     //  this means rotation is applied first to every vertex, then translation
     // note the order is opposite to the order of transformation calls in the code!
+}
+
+
+// Draw the triangles of the models
+void draw_model()
+{    	
+	apply_transform();
+	set_material_properties(1,1,1);		// set color to GREY
+	glPushMatrix();		
+	
+    glBegin(GL_TRIANGLES);
     
-    // draw the scene
-    draw_scene();
+	// For each triangle
+    for(int i=0; i<num_triangles; i++)
+    {		
+		// Set the normal
+		glNormal3f( tri[i].normal[0], tri[i].normal[1], tri[i].normal[2] );
+		
+		// Set each vertex in the triangle
+		for(int v=0; v<3; v++)
+			glVertex3f( tri[i].get(v, 0), tri[i].get(v, 1), tri[i].get(v, 2) );
+    }
+    
+    glEnd();
+	
+	glPopMatrix();
+}
+
+
+// Draw a shadow polygon for each triangle in shadow
+void draw_shadow()
+{
+	apply_transform();
+	//set_material_properties(.5,.5,1);	// set color to BLUE
+	glPushMatrix(); 
+	
+	glBegin(GL_QUADS);
+	
+	// For each triangle
+    for(int i=0; i<num_triangles; i++)
+    {
+		
+		// If the triangle is in shadow 
+		if( !tri[i].lit( light_coord ) )
+        {						
+			// Tell the triangle to calculate it's shadow
+			tri[i].calc_shadow(light_coord);
+
+			// For each face of the shadow
+			for(int v=0; v<3; v++)
+			{
+				// Set the normal for each face of the shadow
+				glNormal3f( tri[i].shadow_normal[v][0], tri[i].shadow_normal[v][1], tri[i].shadow_normal[v][2] );
+				
+				// First vertex (from the triangle)
+				glVertex3f( tri[i].get(v, 0), tri[i].get(v, 1), tri[i].get(v, 2) );
+				
+				// Second vertex (next vertex from the triangle)
+				glVertex3f( tri[i].get((v+1)%3, 0), tri[i].get((v+1)%3, 1), tri[i].get((v+1)%3, 2) );
+				
+				// Third vertex (calculated from the first vertex)
+				glVertex4f(tri[i].shadow_pair[(v+1)%3][0], tri[i].shadow_pair[(v+1)%3][1], tri[i].shadow_pair[(v+1)%3][2], 0);
+				
+				// Forth vertex (calculated from the second vertex)
+				glVertex4f(tri[i].shadow_pair[v][0], tri[i].shadow_pair[v][1], tri[i].shadow_pair[v][2], 0);
+			}
+		}
+    }
+    
+    glEnd();
+	
+	glPopMatrix(); 
+}
+
+// Draw the light source
+void init_light()
+{
+	glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
+	//glLoadIdentity();            // Comment out to "fixate" the light
+	
+	// Location of the light source
+	GLfloat light_position[] = { orig_light_coord[0], orig_light_coord[1], orig_light_coord[2], 0 };
+	
+	// Load the location
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);	
+	
+	// Initialize light source
+	GLfloat light_ambient[] =  { .1, .1, .1, 1.0 };
+	GLfloat light_diffuse[] = { .7, .7, .7, 1.0 };
+	GLfloat light_specular[] = { 0, 0, 0, 1.0 };	
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+	
+	// Attenuation coefficients 
+	glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION,1.0);  // no 
+	glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION,0.0);    // attenuation
+	glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION,0.0); // 1/(0*d^2+0*d+1)=1 attenuation factor		
+}
+
+
+
+// Draw the scene
+GLvoid draw()
+{	
+	
+	//gluProject(<#GLdouble objX#>, <#GLdouble objY#>, <#GLdouble objZ#>, <#const GLdouble *model#>, <#const GLdouble *proj#>, <#const GLint *view#>, <#GLdouble *winX#>, <#GLdouble *winY#>, <#GLdouble *winZ#>)
+    // ensure we're drawing to the correct GLUT window 
+    glutSetWindow(wid);
+	
+	// clear color buffer to white 
+	glClearColor(1.0, 1.0, 1.0, 1.0);
+	
+	glEnable(GL_DEPTH_TEST);
+	
+	// automatically scale normals to unit length after transformation
+    glEnable(GL_NORMALIZE);
+	
+	glEnable(GL_CULL_FACE);
+	
+	init_light();
+	glEnable(GL_LIGHTING); 
+	glDisable(GL_LIGHT0);
+	
+	// clear the color buffers and stencil buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	// draw the model without light
+	draw_model();
+	
+
+	// disable buffers
+	glColorMask(0, 0, 0, 0);
+	glDepthMask(0);        
+	
+	// set the depth and stencil functions
+	glDepthFunc(GL_LEQUAL);
+	glStencilFunc(GL_ALWAYS, 1, 1);
+
+    // turn back-face culling on so the stencil buffer will only see the font faces
+	glCullFace(GL_BACK);
+	
+	// increment the stencil buffer on the front faces
+	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+	
+	glEnable(GL_STENCIL_TEST);
+	
+	// draw the shadow polygon 
+	draw_shadow();
+	
+	
+	glCullFace(GL_FRONT);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
+	glEnable(GL_STENCIL_TEST);
+	
+	draw_shadow();
+	
+	glCullFace(GL_BACK);
+	glStencilFunc(GL_EQUAL, 0, 0xFFFFFFFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	
+    // enable buffers
+	glColorMask(1, 1, 1, 1);
+	glDepthMask(1);
+	
+	// enable lighting
+	glEnable(GL_LIGHT0);
+	
+	// run stencil and depth test
+    glEnable(GL_DEPTH_TEST);
+	
+    draw_model();
+	
     
     // flush the pipeline -- make sure things will eventually get drawn
     glFlush();
     
     // swap the buffers
-    // we really are drawing to an invisible buffer -- the call below is going to 
-    // make it visible so that we don't see the drawing process and are in sync
-    // with the monitor's refresh rate
     glutSwapBuffers();
 }
 
