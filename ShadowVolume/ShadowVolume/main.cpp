@@ -6,27 +6,24 @@
 //  Copyright 2011 Colorado School of Mines. All rights reserved.
 //
 
+
+#ifdef __APPLE__
+#	include <OpenGL/gl.h>
+#	include <OpenGL/glu.h>
+#	include <GLUT/glut.h>
+#else
+#	include <GL/gl.h>
+#	include <GL/glu.h>
+#	include <GL/glut.h>
+#endif
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-
-#ifdef __APPLE__
-
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <GLUT/glut.h>
-
-#else
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-
-#endif
 #include <iostream>
 #include <fstream>
 #include "vec3d.h"
 #include "mat4x4.h"
+
 
 using namespace std;
 
@@ -80,13 +77,22 @@ public:
 	vec3df shadow_normal[3];
 	
 	// Return a vertex
-	vec3df get(int vertex) { return *vert[vertex]; }
+	vec3df get(int vertex) 
+	{ 
+		return *vert[vertex]; 
+	}
 	
 	// Return a coordinate of a vertex
-	float get(int vertex, int coord) { return (*vert[vertex])[coord]; }
+	float get(int vertex, int coord) 
+	{ 
+		return (*vert[vertex])[coord]; 
+	}
 	
 	// Calculate the normal vector of the triangle
-    void calc_normal() { normal = (get(1) - get(0))^(get(2) - get(0)); }
+    void calc_normal() 
+	{ 
+		normal = (get(1) - get(0))^(get(2) - get(0)); 
+	}
 	
     
 	// Determine if the triangle is lit
@@ -549,6 +555,12 @@ GLvoid reshape(GLint vpw, GLint vph)
 // Pass functions to OpenGL's main loop
 GLint main(int argc, char **argv)
 {  
+	if( argc < 2 )
+	{
+		cout << "Usage: ./main ModelFile.t\n";
+		exit(EXIT_FAILURE);
+	}
+	
     // need this call to initialize glut/GL -- don't execute any OpenGL code before this call!
     glutInit(&argc,argv);
     

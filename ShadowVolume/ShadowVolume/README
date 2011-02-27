@@ -1,0 +1,19 @@
+Andy Niccolai
+Advanced Graphics
+2/27/2011
+
+Project 01
+
+This program will display a 3D model with a realistic shadow. A discussion of potential problems and issues with my implementation is included in REPORT.
+
+Usage:
+	Run "make" in this directory to compile the program.
+	Run "./main ModelFile.t" to execute the program and specify a .t file to read in.
+
+List of files:
+	main.cpp		// Entry point of the application, everything is in here
+	mat4x4.h		// File provided for project, performs matrix multiplication for the trackball
+	vec3d.h			// File provided for project, performs vector operations
+	Makefile		// Configuration file to compile the project
+	REPORT			// Write up of potential issues with the algorithm
+	README			// This file
