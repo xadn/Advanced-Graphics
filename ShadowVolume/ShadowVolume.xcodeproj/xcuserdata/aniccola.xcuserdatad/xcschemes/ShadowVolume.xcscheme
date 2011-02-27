@@ -33,6 +33,10 @@
             argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/motorcycleb.t"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/antb.t"
+            isEnabled = "NO">
+         </CommandLineArgument>
       </CommandLineArguments>
    </TestAction>
    <LaunchAction
@@ -56,6 +60,10 @@
          <CommandLineArgument
             argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/motorcycleb.t"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/antb.t"
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
@@ -81,6 +89,10 @@
          <CommandLineArgument
             argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/motorcycleb.t"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/antb.t"
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
    </ProfileAction>

@@ -9,14 +9,19 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+
 #ifdef __APPLE__
-    #include <OpenGL/gl.h>
-    #include <OpenGL/glu.h>
-    #include <GLUT/glut.h>
+
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
+
 #else
-    #include <GL/gl.h>
-    #include <GL/glu.h>
-    #include <GL/glut.h>
+
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+
 #endif
 #include <iostream>
 #include <fstream>
@@ -82,6 +87,7 @@ public:
 	
 	// Calculate the normal vector of the triangle
     void calc_normal() { normal = (get(1) - get(0))^(get(2) - get(0)); }
+	
     
 	// Determine if the triangle is lit
     bool lit(vec3df &light)
@@ -260,7 +266,7 @@ void draw_shadow()
 			for(int v=0; v<3; v++)
 			{
 				// Set the normal for each face of the shadow
-				glNormal3f( tri[i].shadow_normal[v][0], tri[i].shadow_normal[v][1], tri[i].shadow_normal[v][2] );
+				//glNormal3f( tri[i].shadow_normal[v][0], tri[i].shadow_normal[v][1], tri[i].shadow_normal[v][2] );
 				
 				// First vertex (from the triangle)
 				glVertex3f( tri[i].get(v, 0), tri[i].get(v, 1), tri[i].get(v, 2) );
@@ -313,8 +319,7 @@ void init_light()
 // Draw the scene
 GLvoid draw()
 {	
-	
-	//gluProject(<#GLdouble objX#>, <#GLdouble objY#>, <#GLdouble objZ#>, <#const GLdouble *model#>, <#const GLdouble *proj#>, <#const GLint *view#>, <#GLdouble *winX#>, <#GLdouble *winY#>, <#GLdouble *winZ#>)
+
     // ensure we're drawing to the correct GLUT window 
     glutSetWindow(wid);
 	
