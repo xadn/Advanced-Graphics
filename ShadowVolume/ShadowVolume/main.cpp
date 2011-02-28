@@ -27,10 +27,178 @@
 
 using namespace std;
 
+#define SWAP_ROWS_DOUBLE(a, b) { double *_tmp = a; (a)=(b); (b)=_tmp; }
+#define SWAP_ROWS_FLOAT(a, b) { float *_tmp = a; (a)=(b); (b)=_tmp; }
+#define MAT(m,r,c) (m)[(c)*4+(r)]
+
+
+void MultiplyMatrixByVector4by4OpenGL_FLOAT(float *resultvector, const float *matrix, const float *pvector)
+{
+    resultvector[0]=matrix[0]*pvector[0]+matrix[4]*pvector[1]+matrix[8]*pvector[2]+matrix[12]*pvector[3];
+    resultvector[1]=matrix[1]*pvector[0]+matrix[5]*pvector[1]+matrix[9]*pvector[2]+matrix[13]*pvector[3];
+    resultvector[2]=matrix[2]*pvector[0]+matrix[6]*pvector[1]+matrix[10]*pvector[2]+matrix[14]*pvector[3];
+    resultvector[3]=matrix[3]*pvector[0]+matrix[7]*pvector[1]+matrix[11]*pvector[2]+matrix[15]*pvector[3];
+}
+
+
+//This code comes directly from GLU except that it is for float
+int glhInvertMatrixf2(float *m, float *out)
+{
+	float wtmp[4][8];
+	float m0, m1, m2, m3, s;
+	float *r0, *r1, *r2, *r3;
+	r0 = wtmp[0], r1 = wtmp[1], r2 = wtmp[2], r3 = wtmp[3];
+	r0[0] = MAT(m, 0, 0), r0[1] = MAT(m, 0, 1),
+	r0[2] = MAT(m, 0, 2), r0[3] = MAT(m, 0, 3),
+	r0[4] = 1.0, r0[5] = r0[6] = r0[7] = 0.0,
+	r1[0] = MAT(m, 1, 0), r1[1] = MAT(m, 1, 1),
+	r1[2] = MAT(m, 1, 2), r1[3] = MAT(m, 1, 3),
+	r1[5] = 1.0, r1[4] = r1[6] = r1[7] = 0.0,
+	r2[0] = MAT(m, 2, 0), r2[1] = MAT(m, 2, 1),
+	r2[2] = MAT(m, 2, 2), r2[3] = MAT(m, 2, 3),
+	r2[6] = 1.0, r2[4] = r2[5] = r2[7] = 0.0,
+	r3[0] = MAT(m, 3, 0), r3[1] = MAT(m, 3, 1),
+	r3[2] = MAT(m, 3, 2), r3[3] = MAT(m, 3, 3),
+	r3[7] = 1.0, r3[4] = r3[5] = r3[6] = 0.0;
+	/* choose pivot - or die */
+	if (fabsf(r3[0]) > fabsf(r2[0]))
+		SWAP_ROWS_FLOAT(r3, r2);
+	if (fabsf(r2[0]) > fabsf(r1[0]))
+		SWAP_ROWS_FLOAT(r2, r1);
+	if (fabsf(r1[0]) > fabsf(r0[0]))
+		SWAP_ROWS_FLOAT(r1, r0);
+	if (0.0 == r0[0])
+		return 0;
+	/* eliminate first variable     */
+	m1 = r1[0] / r0[0];
+	m2 = r2[0] / r0[0];
+	m3 = r3[0] / r0[0];
+	s = r0[1];
+	r1[1] -= m1 * s;
+	r2[1] -= m2 * s;
+	r3[1] -= m3 * s;
+	s = r0[2];
+	r1[2] -= m1 * s;
+	r2[2] -= m2 * s;
+	r3[2] -= m3 * s;
+	s = r0[3];
+	r1[3] -= m1 * s;
+	r2[3] -= m2 * s;
+	r3[3] -= m3 * s;
+	s = r0[4];
+	if (s != 0.0) {
+		r1[4] -= m1 * s;
+		r2[4] -= m2 * s;
+		r3[4] -= m3 * s;
+	}
+	s = r0[5];
+	if (s != 0.0) {
+		r1[5] -= m1 * s;
+		r2[5] -= m2 * s;
+		r3[5] -= m3 * s;
+	}
+	s = r0[6];
+	if (s != 0.0) {
+		r1[6] -= m1 * s;
+		r2[6] -= m2 * s;
+		r3[6] -= m3 * s;
+	}
+	s = r0[7];
+	if (s != 0.0) {
+		r1[7] -= m1 * s;
+		r2[7] -= m2 * s;
+		r3[7] -= m3 * s;
+	}
+	/* choose pivot - or die */
+	if (fabsf(r3[1]) > fabsf(r2[1]))
+		SWAP_ROWS_FLOAT(r3, r2);
+	if (fabsf(r2[1]) > fabsf(r1[1]))
+		SWAP_ROWS_FLOAT(r2, r1);
+	if (0.0 == r1[1])
+		return 0;
+	/* eliminate second variable */
+	m2 = r2[1] / r1[1];
+	m3 = r3[1] / r1[1];
+	r2[2] -= m2 * r1[2];
+	r3[2] -= m3 * r1[2];
+	r2[3] -= m2 * r1[3];
+	r3[3] -= m3 * r1[3];
+	s = r1[4];
+	if (0.0 != s) {
+		r2[4] -= m2 * s;
+		r3[4] -= m3 * s;
+	}
+	s = r1[5];
+	if (0.0 != s) {
+		r2[5] -= m2 * s;
+		r3[5] -= m3 * s;
+	}
+	s = r1[6];
+	if (0.0 != s) {
+		r2[6] -= m2 * s;
+		r3[6] -= m3 * s;
+	}
+	s = r1[7];
+	if (0.0 != s) {
+		r2[7] -= m2 * s;
+		r3[7] -= m3 * s;
+	}
+	/* choose pivot - or die */
+	if (fabsf(r3[2]) > fabsf(r2[2]))
+		SWAP_ROWS_FLOAT(r3, r2);
+	if (0.0 == r2[2])
+		return 0;
+	/* eliminate third variable */
+	m3 = r3[2] / r2[2];
+	r3[3] -= m3 * r2[3], r3[4] -= m3 * r2[4],
+	r3[5] -= m3 * r2[5], r3[6] -= m3 * r2[6], r3[7] -= m3 * r2[7];
+	/* last check */
+	if (0.0 == r3[3])
+		return 0;
+	s = 1.0 / r3[3];		/* now back substitute row 3 */
+	r3[4] *= s;
+	r3[5] *= s;
+	r3[6] *= s;
+	r3[7] *= s;
+	m2 = r2[3];			/* now back substitute row 2 */
+	s = 1.0 / r2[2];
+	r2[4] = s * (r2[4] - r3[4] * m2), r2[5] = s * (r2[5] - r3[5] * m2),
+	r2[6] = s * (r2[6] - r3[6] * m2), r2[7] = s * (r2[7] - r3[7] * m2);
+	m1 = r1[3];
+	r1[4] -= r3[4] * m1, r1[5] -= r3[5] * m1,
+	r1[6] -= r3[6] * m1, r1[7] -= r3[7] * m1;
+	m0 = r0[3];
+	r0[4] -= r3[4] * m0, r0[5] -= r3[5] * m0,
+	r0[6] -= r3[6] * m0, r0[7] -= r3[7] * m0;
+	m1 = r1[2];			/* now back substitute row 1 */
+	s = 1.0 / r1[1];
+	r1[4] = s * (r1[4] - r2[4] * m1), r1[5] = s * (r1[5] - r2[5] * m1),
+	r1[6] = s * (r1[6] - r2[6] * m1), r1[7] = s * (r1[7] - r2[7] * m1);
+	m0 = r0[2];
+	r0[4] -= r2[4] * m0, r0[5] -= r2[5] * m0,
+	r0[6] -= r2[6] * m0, r0[7] -= r2[7] * m0;
+	m0 = r0[1];			/* now back substitute row 0 */
+	s = 1.0 / r0[0];
+	r0[4] = s * (r0[4] - r1[4] * m0), r0[5] = s * (r0[5] - r1[5] * m0),
+	r0[6] = s * (r0[6] - r1[6] * m0), r0[7] = s * (r0[7] - r1[7] * m0);
+	MAT(out, 0, 0) = r0[4];
+	MAT(out, 0, 1) = r0[5], MAT(out, 0, 2) = r0[6];
+	MAT(out, 0, 3) = r0[7], MAT(out, 1, 0) = r1[4];
+	MAT(out, 1, 1) = r1[5], MAT(out, 1, 2) = r1[6];
+	MAT(out, 1, 3) = r1[7], MAT(out, 2, 0) = r2[4];
+	MAT(out, 2, 1) = r2[5], MAT(out, 2, 2) = r2[6];
+	MAT(out, 2, 3) = r2[7], MAT(out, 3, 0) = r3[4];
+	MAT(out, 3, 1) = r3[5], MAT(out, 3, 2) = r3[6];
+	MAT(out, 3, 3) = r3[7];
+	return 1;
+}
+
 // Forward declaration of triangle class
 class triangle;
 
 // global variables -- used for communication between callback functions
+
+float mv_matrix[16];
 
 vec3df orig_light_coord( -5.0, 2.0, 5.0 );
 vec3df light_coord = orig_light_coord;
@@ -201,7 +369,7 @@ void apply_transform()
     // this places camera at the origin and directs it toward (0,0,-infinity)
     // see man gluPerspective for the meaning of the parameters
     // I have no idea how I came up with the field of view :)
-    gluPerspective(89.98*(atan(zoom-2)+M_PI/2)/M_PI+0.01,1.0,15.0,25.0);
+    gluPerspective(89.98*(atan(zoom-2)+M_PI/2)/M_PI+0.01,1.0,15.0,50.0);
     
     // build the modelview matrix
     glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
@@ -219,7 +387,7 @@ void apply_transform()
     
     // at this point, modelview matrix = T*R
     //  this means rotation is applied first to every vertex, then translation
-    // note the order is opposite to the order of transformation calls in the code!
+    // note the order is opposite to the order of transformation calls in the code!	
 }
 
 
@@ -294,11 +462,39 @@ void draw_shadow()
 	glPopMatrix(); 
 }
 
+
+// Transform the light coodinates
+void transform_light()
+{
+	// Get the modelview matrix
+	float mv_temp[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, mv_temp);
+	
+	// Find the inverse transformation
+	glhInvertMatrixf2(mv_temp, mv_matrix);
+	
+	// Temprary variables since MultiplyMatrix expects a 4x1
+	float light_out[4];
+	float light_in[] = {orig_light_coord[0], orig_light_coord[1], orig_light_coord[2], 0};
+	
+	// Apply the transformation to the light coordinates
+	MultiplyMatrixByVector4by4OpenGL_FLOAT(light_out, mv_matrix, light_in);
+	
+	light_coord = vec3df(light_out[0], light_out[1], light_out[2]);	
+}
+
+
 // Draw the light source
 void init_light()
 {
-	glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
-	//glLoadIdentity();            // Comment out to "fixate" the light
+	// Operate on modelview matrix
+	glMatrixMode(GL_MODELVIEW);  
+	
+	// Recalculate the position of the light for the shadow polygons
+	transform_light();
+	
+	// Comment out to "fixate" the light
+	glLoadIdentity();            
 	
 	// Location of the light source
 	GLfloat light_position[] = { orig_light_coord[0], orig_light_coord[1], orig_light_coord[2], 0 };
