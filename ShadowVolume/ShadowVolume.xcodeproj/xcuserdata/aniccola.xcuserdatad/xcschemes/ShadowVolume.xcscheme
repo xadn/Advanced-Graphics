@@ -34,7 +34,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/antb.t"
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/grandpiano.t"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
@@ -62,7 +62,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/antb.t"
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/grandpiano.t"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
@@ -91,7 +91,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/antb.t"
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/grandpiano.t"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>

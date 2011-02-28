@@ -27,6 +27,7 @@
 
 using namespace std;
 
+
 #define SWAP_ROWS_DOUBLE(a, b) { double *_tmp = a; (a)=(b); (b)=_tmp; }
 #define SWAP_ROWS_FLOAT(a, b) { float *_tmp = a; (a)=(b); (b)=_tmp; }
 #define MAT(m,r,c) (m)[(c)*4+(r)]
@@ -193,6 +194,7 @@ int glhInvertMatrixf2(float *m, float *out)
 	return 1;
 }
 
+
 // Forward declaration of triangle class
 class triangle;
 
@@ -203,10 +205,10 @@ float mv_matrix[16];
 vec3df orig_light_coord( -5.0, 2.0, 5.0 );
 vec3df light_coord = orig_light_coord;
 
-int num_triangles;
-triangle *tri = NULL;
 int num_points;
+int num_triangles;
 vec3df *v_list = NULL;
+triangle *tri = NULL;
 
 // window ID
 int wid;
@@ -264,19 +266,19 @@ public:
 	
     
 	// Determine if the triangle is lit
-    bool lit(vec3df &light)
+    bool lit()
     {
-        if( (( light - get(0) ) * normal) > 0 )
+        if( (( light_coord - get(0) ) * normal) > 0 )
 			return true;
 		return false;
     }
 	
 	// Calculate the shadow quads and normals
-	void calc_shadow(vec3df &light)
+	void calc_shadow()
 	{
 		for(int v=0; v<3; v++)
 		{
-			shadow_pair[v] = get(v) - light;
+			shadow_pair[v] = get(v) - light_coord;
 			shadow_normal[v] = (get((v+1)%3) - get(v))^(shadow_pair[v] - get(v));
 		}
 	}
@@ -295,8 +297,10 @@ void read_file(char *filename)
     
     // Temp variable for triangles
     int t[num_triangles][3];
+	
     // Initalize member to contain the triangles
     tri = new triangle[num_triangles];
+	
     // Initalize member to contain the verticies
     v_list = new vec3df[num_points];
     
@@ -369,7 +373,7 @@ void apply_transform()
     // this places camera at the origin and directs it toward (0,0,-infinity)
     // see man gluPerspective for the meaning of the parameters
     // I have no idea how I came up with the field of view :)
-    gluPerspective(89.98*(atan(zoom-2)+M_PI/2)/M_PI+0.01,1.0,15.0,50.0);
+    gluPerspective(89.98*(atan(zoom-2)+M_PI/2)/M_PI+0.01,1.0,5.0,50.0);
     
     // build the modelview matrix
     glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
@@ -431,10 +435,10 @@ void draw_shadow()
     {
 		
 		// If the triangle is in shadow 
-		if( !tri[i].lit( light_coord ) )
+		if( !tri[i].lit() )
         {						
 			// Tell the triangle to calculate it's shadow
-			tri[i].calc_shadow(light_coord);
+			tri[i].calc_shadow();
 
 			// For each face of the shadow
 			for(int v=0; v<3; v++)
@@ -587,7 +591,6 @@ GLvoid draw()
     glEnable(GL_DEPTH_TEST);
 	
     draw_model();
-	
     
     // flush the pipeline -- make sure things will eventually get drawn
     glFlush();
