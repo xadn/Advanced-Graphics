@@ -244,7 +244,8 @@ public:
 	vec3df shadow_pair[3];
 	
 	// Shadow quad's normal vector
-	vec3df shadow_normal[3];
+	//vec3df shadow_normal[3];
+	
 	
 	// Return a vertex
 	vec3df get(int vertex) 
@@ -279,7 +280,7 @@ public:
 		for(int v=0; v<3; v++)
 		{
 			shadow_pair[v] = get(v) - light_coord;
-			shadow_normal[v] = (get((v+1)%3) - get(v))^(shadow_pair[v] - get(v));
+			//shadow_normal[v] = (get((v+1)%3) - get(v))^(shadow_pair[v] - get(v));
 		}
 	}
 	
@@ -407,12 +408,14 @@ void draw_model()
 	// For each triangle
     for(int i=0; i<num_triangles; i++)
     {		
+
 		// Set the normal
 		glNormal3f( tri[i].normal[0], tri[i].normal[1], tri[i].normal[2] );
 		
 		// Set each vertex in the triangle
 		for(int v=0; v<3; v++)
 			glVertex3f( tri[i].get(v, 0), tri[i].get(v, 1), tri[i].get(v, 2) );
+			
     }
     
     glEnd();
@@ -422,7 +425,7 @@ void draw_model()
 
 
 // Draw a shadow polygon for each triangle in shadow
-void draw_shadow()
+void draw_shadow(const bool recalc)
 {
 	apply_transform();
 	//set_material_properties(.5,.5,1);	// set color to BLUE
@@ -438,7 +441,8 @@ void draw_shadow()
 		if( !tri[i].lit() )
         {						
 			// Tell the triangle to calculate it's shadow
-			tri[i].calc_shadow();
+			if( recalc )
+				tri[i].calc_shadow();
 
 			// For each face of the shadow
 			for(int v=0; v<3; v++)
@@ -532,12 +536,13 @@ GLvoid draw()
 	// clear color buffer to white 
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	
-	glEnable(GL_DEPTH_TEST);
+	// turn back-face culling on so the stencil buffer will only see the front faces
+	glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
 	
 	// automatically scale normals to unit length after transformation
-    glEnable(GL_NORMALIZE);
-	
-	glEnable(GL_CULL_FACE);
+	glEnable(GL_NORMALIZE);
+	glEnable(GL_DEPTH_TEST);
 	
 	init_light();
 	glEnable(GL_LIGHTING); 
@@ -546,20 +551,17 @@ GLvoid draw()
 	// clear the color buffers and stencil buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+	// FIRST PASS
 	// draw the model without light
 	draw_model();
 	
-
 	// disable buffers
 	glColorMask(0, 0, 0, 0);
 	glDepthMask(0);        
 	
 	// set the depth and stencil functions
 	glDepthFunc(GL_LEQUAL);
-	glStencilFunc(GL_ALWAYS, 1, 1);
-
-    // turn back-face culling on so the stencil buffer will only see the font faces
-	glCullFace(GL_BACK);
+	glStencilFunc(GL_ALWAYS, 1, -1);
 	
 	// increment the stencil buffer on the front faces
 	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
@@ -567,18 +569,21 @@ GLvoid draw()
 	glEnable(GL_STENCIL_TEST);
 	
 	// draw the shadow polygon 
-	draw_shadow();
+	draw_shadow(1);
 	
 	
+	// SECOND PASS
 	glCullFace(GL_FRONT);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
-	glEnable(GL_STENCIL_TEST);
 	
-	draw_shadow();
+	draw_shadow(0);
 	
+	
+	// LAST PASS
 	glCullFace(GL_BACK);
-	glStencilFunc(GL_EQUAL, 0, 0xFFFFFFFF);
+	glStencilFunc(GL_EQUAL, 0, -1);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	
 	
     // enable buffers
 	glColorMask(1, 1, 1, 1);
@@ -587,10 +592,8 @@ GLvoid draw()
 	// enable lighting
 	glEnable(GL_LIGHT0);
 	
-	// run stencil and depth test
-    glEnable(GL_DEPTH_TEST);
-	
     draw_model();
+	//draw_shadow(0);
     
     // flush the pipeline -- make sure things will eventually get drawn
     glFlush();
@@ -773,7 +776,7 @@ GLint main(int argc, char **argv)
     
     // create a GLUT window (not drawn until glutMainLoop() is entered)
     // wid is the window ID
-    wid = glutCreateWindow("Graphics II: sample code");    
+    wid = glutCreateWindow("Andy's bitchin' shadow volume");    
     
     // time to register callbacks 
     
