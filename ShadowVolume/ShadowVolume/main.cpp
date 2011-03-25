@@ -398,7 +398,7 @@ void apply_transform()
 // Draw the triangles of the models
 void draw_model()
 {    	
-	apply_transform();
+	//apply_transform();
 	set_material_properties(1,1,1);		// set color to GREY
 	glPushMatrix();		
 	
@@ -426,7 +426,7 @@ void draw_model()
 // Draw a shadow polygon for each triangle in shadow
 void draw_shadow()
 {
-	apply_transform();
+	//apply_transform();
     
 	glPushMatrix(); 
 	
@@ -521,15 +521,18 @@ void init_light()
 // Draw the scene
 GLvoid draw()
 {	
+    // ensure we're drawing to the correct GLUT window 
+    glutSetWindow(wid);
+    
     // Get the trackball rotation for this pass 
     rotation_matrix = get_rotation();
+    
+    init_light();
     
     // Recalculate the position of the light for the shadow polygons
     transform_light();
 
-    // ensure we're drawing to the correct GLUT window 
-    glutSetWindow(wid);
-    
+    apply_transform();
 	
     // FIRST PASS
     
@@ -542,9 +545,7 @@ GLvoid draw()
 	
 	// automatically scale normals to unit length after transformation
 	glEnable(GL_NORMALIZE);
-	glEnable(GL_DEPTH_TEST);
-	
-	init_light();
+	glEnable(GL_DEPTH_TEST);	
 	glEnable(GL_LIGHTING); 
 	glDisable(GL_LIGHT0);
 	
