@@ -13,6 +13,8 @@
 
 using namespace std;
 
+const char* WINDOW_TITLE = "Andy's Vector Field Visualization";
+
 
 /* ----------------------------------------------------------- */
 
@@ -228,7 +230,7 @@ int main(int argc, char **argv)
 
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
-  wid = glutCreateWindow("Computer Graphics II - project 2");    
+  wid = glutCreateWindow(WINDOW_TITLE);    
 
   glutReshapeFunc(reshape);
   glutKeyboardFunc(keyboard);
@@ -266,8 +268,8 @@ int main(int argc, char **argv)
     // 1- a procedureal texture
     // 2- simple texture lookup (equivalent to what the fixed functionality pipeline would do)
     // 3- a (very bad) implementation of a Gaussian filter
-    const GLchar *vsh = read_file("vertex-shader2.txt");
-    const GLchar *fsh = read_file("pixel-shader2.txt");
+    const GLchar *vsh = read_file("vertex-shader1.txt");
+    const GLchar *fsh = read_file("pixel-shader1.txt");
 
     GLint vshid = glCreateShader(GL_VERTEX_SHADER);
     GLint fshid = glCreateShader(GL_FRAGMENT_SHADER);

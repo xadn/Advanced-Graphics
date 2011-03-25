@@ -37,9 +37,6 @@
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Debug">
-      <PathRunnable
-         FilePath = "/Users/aniccola/Dropbox/Spring 2011/graphics/src/VectorField/main">
-      </PathRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>

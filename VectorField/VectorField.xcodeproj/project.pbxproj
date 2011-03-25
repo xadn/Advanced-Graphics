@@ -9,7 +9,7 @@
 /* Begin PBXFileReference section */
 		7EE9A6C9133C88B100922D7A /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		7EE9A6CA133C88B100922D7A /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
-		7EE9A6CB133C88B100922D7A /* pixel-shader1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "pixel-shader1.txt"; sourceTree = "<group>"; };
+		7EE9A6CB133C88B100922D7A /* pixel-shader1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "pixel-shader1.txt"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		7EE9A6CC133C88B100922D7A /* pixel-shader2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "pixel-shader2.txt"; sourceTree = "<group>"; };
 		7EE9A6CD133C88B100922D7A /* pixel-shader3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "pixel-shader3.txt"; sourceTree = "<group>"; };
 		7EE9A6CE133C88B100922D7A /* vertex-shader1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "vertex-shader1.txt"; sourceTree = "<group>"; };
@@ -153,6 +153,7 @@
 				7EE9A6C8133C888700922D7A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
