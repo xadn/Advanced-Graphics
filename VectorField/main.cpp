@@ -1,7 +1,10 @@
 
 #include <GL/glew.h>
-#include <GL/glut.h>
-
+#ifdef __APPLE__
+#	include <GLUT/glut.h>
+#else
+#	include <GL/glut.h>
+#endif
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -263,8 +266,8 @@ int main(int argc, char **argv)
     // 1- a procedureal texture
     // 2- simple texture lookup (equivalent to what the fixed functionality pipeline would do)
     // 3- a (very bad) implementation of a Gaussian filter
-    const GLchar *vsh = read_file("vertex-shader1.txt");
-    const GLchar *fsh = read_file("pixel-shader1.txt");
+    const GLchar *vsh = read_file("vertex-shader2.txt");
+    const GLchar *fsh = read_file("pixel-shader2.txt");
 
     GLint vshid = glCreateShader(GL_VERTEX_SHADER);
     GLint fshid = glCreateShader(GL_FRAGMENT_SHADER);
