@@ -200,7 +200,7 @@ class triangle;
 
 // global variables -- used for communication between callback functions
 
-float mv_matrix[16];
+mat4x4d rotation_matrix;
 
 vec3df orig_light_coord( -5.0, 2.0, 5.0 );
 vec3df light_coord = orig_light_coord;
@@ -387,8 +387,8 @@ void apply_transform()
     glTranslatef(0,0,-20);   // Move the model 'forward' with respect to the camera
     
     // at this point, modelview matrix = T [translation by (0,0,-20)]
-    mat4x4d R = get_rotation();
-    glMultMatrixd(R.pointer());   // this applies a rotation R that is computed from the trackball UI
+   // mat4x4d R = get_rotation();
+    glMultMatrixd(rotation_matrix.pointer());   // this applies a rotation R that is computed from the trackball UI
     
     // at this point, modelview matrix = T*R
     //  this means rotation is applied first to every vertex, then translation
@@ -474,11 +474,14 @@ void draw_shadow(const bool recalc)
 // Transform the light coodinates
 void transform_light()
 {
-	// Get the modelview matrix
-	float mv_temp[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, mv_temp);
+	// Get the modelview matrix    
+    double *r_temp = rotation_matrix.pointer();
+    
+	float mv_temp[] = {r_temp[0], r_temp[1], r_temp[2], r_temp[3], r_temp[4], r_temp[5], r_temp[6], r_temp[7], r_temp[8], r_temp[9], r_temp[10], r_temp[11], r_temp[12], r_temp[13], r_temp[14], r_temp[15]};
+	//glGetFloatv(GL_MODELVIEW_MATRIX, mv_temp);
 	
 	// Find the inverse transformation
+    float mv_matrix[16];
 	glhInvertMatrixf2(mv_temp, mv_matrix);
 	
 	// Temprary variables since MultiplyMatrix expects a 4x1
@@ -499,7 +502,7 @@ void init_light()
 	glMatrixMode(GL_MODELVIEW);  
 	
 	// Recalculate the position of the light for the shadow polygons
-	transform_light();
+	//transform_light();
 	
 	// Comment out to "fixate" the light
 	glLoadIdentity();            
@@ -529,6 +532,8 @@ void init_light()
 // Draw the scene
 GLvoid draw()
 {	
+    rotation_matrix = get_rotation();
+    transform_light();
 
     // ensure we're drawing to the correct GLUT window 
     glutSetWindow(wid);
@@ -776,7 +781,7 @@ GLint main(int argc, char **argv)
     
     // create a GLUT window (not drawn until glutMainLoop() is entered)
     // wid is the window ID
-    wid = glutCreateWindow("Andy's bitchin' shadow volume");    
+    wid = glutCreateWindow("Andy's shadow volume");    
     
     // time to register callbacks 
     
