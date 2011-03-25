@@ -202,8 +202,8 @@ class triangle;
 
 mat4x4d rotation_matrix;
 
-vec3df orig_light_coord( -5.0, 2.0, 5.0 );
-vec3df light_coord = orig_light_coord;
+vec3df original_light_coord( -5.0, 2.0, 5.0 );
+vec3df transformed_light_coord = original_light_coord;
 
 int num_points;
 int num_triangles;
@@ -269,7 +269,7 @@ public:
 	// Determine if the triangle is lit
     bool lit()
     {
-        if( (( light_coord - get(0) ) * normal) > 0 )
+        if( (( transformed_light_coord - get(0) ) * normal) > 0 )
 			return true;
 		return false;
     }
@@ -279,8 +279,7 @@ public:
 	{
 		for(int v=0; v<3; v++)
 		{
-			shadow_pair[v] = get(v) - light_coord;
-			//shadow_normal[v] = (get((v+1)%3) - get(v))^(shadow_pair[v] - get(v));
+			shadow_pair[v] = get(v) - transformed_light_coord;
 		}
 	}
 	
@@ -408,14 +407,14 @@ void draw_model()
 	// For each triangle
     for(int i=0; i<num_triangles; i++)
     {		
-
 		// Set the normal
 		glNormal3f( tri[i].normal[0], tri[i].normal[1], tri[i].normal[2] );
 		
 		// Set each vertex in the triangle
-		for(int v=0; v<3; v++)
+		for(int v=0; v<3; v++) 
+        {
 			glVertex3f( tri[i].get(v, 0), tri[i].get(v, 1), tri[i].get(v, 2) );
-			
+        }
     }
     
     glEnd();
@@ -425,10 +424,10 @@ void draw_model()
 
 
 // Draw a shadow polygon for each triangle in shadow
-void draw_shadow(const bool recalc)
+void draw_shadow()
 {
 	apply_transform();
-	//set_material_properties(.5,.5,1);	// set color to BLUE
+    
 	glPushMatrix(); 
 	
 	glBegin(GL_QUADS);
@@ -441,8 +440,7 @@ void draw_shadow(const bool recalc)
 		if( !tri[i].lit() )
         {						
 			// Tell the triangle to calculate it's shadow
-			if( recalc )
-				tri[i].calc_shadow();
+            tri[i].calc_shadow();
 
 			// For each face of the shadow
 			for(int v=0; v<3; v++)
@@ -478,20 +476,13 @@ void transform_light()
     double *r_temp = rotation_matrix.pointer();
     
 	float mv_temp[] = {r_temp[0], r_temp[1], r_temp[2], r_temp[3], r_temp[4], r_temp[5], r_temp[6], r_temp[7], r_temp[8], r_temp[9], r_temp[10], r_temp[11], r_temp[12], r_temp[13], r_temp[14], r_temp[15]};
-	//glGetFloatv(GL_MODELVIEW_MATRIX, mv_temp);
 	
 	// Find the inverse transformation
     float mv_matrix[16];
 	glhInvertMatrixf2(mv_temp, mv_matrix);
 	
-	// Temprary variables since MultiplyMatrix expects a 4x1
-	float light_out[4];
-	float light_in[] = {orig_light_coord[0], orig_light_coord[1], orig_light_coord[2], 0};
-	
 	// Apply the transformation to the light coordinates
-	MultiplyMatrixByVector4by4OpenGL_FLOAT(light_out, mv_matrix, light_in);
-	
-	light_coord = vec3df(light_out[0], light_out[1], light_out[2]);	
+	MultiplyMatrixByVector4by4OpenGL_FLOAT(transformed_light_coord.pointer(), mv_matrix, original_light_coord.pointer());
 }
 
 
@@ -507,11 +498,9 @@ void init_light()
 	// Comment out to "fixate" the light
 	glLoadIdentity();            
 	
-	// Location of the light source
-	GLfloat light_position[] = { orig_light_coord[0], orig_light_coord[1], orig_light_coord[2], 0 };
 	
-	// Load the location
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);	
+	// Load the location of the light source
+	glLightfv(GL_LIGHT0, GL_POSITION, original_light_coord.pointer());	
 	
 	// Initialize light source
 	GLfloat light_ambient[] =  { .1, .1, .1, 1.0 };
@@ -532,12 +521,18 @@ void init_light()
 // Draw the scene
 GLvoid draw()
 {	
+    // Get the trackball rotation for this pass 
     rotation_matrix = get_rotation();
+    
+    // Recalculate the position of the light for the shadow polygons
     transform_light();
 
     // ensure we're drawing to the correct GLUT window 
     glutSetWindow(wid);
+    
 	
+    // FIRST PASS
+    
 	// clear color buffer to white 
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	
@@ -556,49 +551,51 @@ GLvoid draw()
 	// clear the color buffers and stencil buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// FIRST PASS
 	// draw the model without light
 	draw_model();
 	
+    
+    // SECOND PASS
+    
 	// disable buffers
 	glColorMask(0, 0, 0, 0);
 	glDepthMask(0);        
+    
+    // disable culling since both surfaces are needed to +/- the buffer
+    glDisable(GL_CULL_FACE);
 	
 	// set the depth and stencil functions
 	glDepthFunc(GL_LEQUAL);
-	glStencilFunc(GL_ALWAYS, 1, -1);
-	
+	glStencilFunc(GL_ALWAYS, 0x0, 0x0);
+    glClearStencil(0x0);
+    glEnable(GL_STENCIL_TEST);
+    
 	// increment the stencil buffer on the front faces
-	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-	
-	glEnable(GL_STENCIL_TEST);
-	
-	// draw the shadow polygon 
-	draw_shadow(1);
-	
-	
-	// SECOND PASS
-	glCullFace(GL_FRONT);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
-	
-	draw_shadow(0);
-	
-	
-	// LAST PASS
-	glCullFace(GL_BACK);
+    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+    
+    // and decrement the stencil buffer on the back faces
+    glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+
+    // draw the shadow polygon 
+	draw_shadow();
+    
+    // switch culling back on to render the final scene
+	glEnable(GL_CULL_FACE);
+    
+    // set the stencil buffer to clean up artifacts
 	glStencilFunc(GL_EQUAL, 0, -1);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	
-	
+    // turn on the lights
+	glEnable(GL_LIGHT0);
+    
     // enable buffers
 	glColorMask(1, 1, 1, 1);
 	glDepthMask(1);
-	
-	// enable lighting
-	glEnable(GL_LIGHT0);
-	
+    
+	// draw the scene in light
     draw_model();
-	//draw_shadow(0);
+	//draw_shadow();
     
     // flush the pipeline -- make sure things will eventually get drawn
     glFlush();
