@@ -200,10 +200,12 @@ class triangle;
 
 // global variables -- used for communication between callback functions
 
-mat4x4d rotation_matrix;
+bool firstEvah = true;
 
-vec3df original_light_coord( -5.0, 2.0, 5.0 );
-vec3df transformed_light_coord = original_light_coord;
+mat4x4f rotation_matrix;
+
+vec3df original_light_position( -5.0, 2.0, 5.0 );
+vec3df transformed_light_position = original_light_position;
 
 int num_points;
 int num_triangles;
@@ -224,8 +226,9 @@ bool is_left_mouse_button_down = false;
 bool is_middle_mouse_button_down = false;
 
 GLfloat zoom;   // this one controls the field of view
+bool update_fov = true;
 
-mat4x4d get_rotation();  // get the rotation matrix to use
+mat4x4f get_rotation();  // get the rotation matrix to use
 
 
 // Class to hold each triangle for the model
@@ -242,11 +245,7 @@ public:
 	
 	// Shadow quad's verticies not in the triangle
 	vec3df shadow_pair[3];
-	
-	// Shadow quad's normal vector
-	//vec3df shadow_normal[3];
-	
-	
+		
 	// Return a vertex
 	vec3df get(int vertex) 
 	{ 
@@ -267,11 +266,11 @@ public:
 	
     
 	// Determine if the triangle is lit
-    bool lit()
+    bool shadowed()
     {
-        if( (( transformed_light_coord - get(0) ) * normal) > 0 )
-			return true;
-		return false;
+        if( (( transformed_light_position - get(0) ) * normal) > 0 )
+			return false;
+		return true;
     }
 	
 	// Calculate the shadow quads and normals
@@ -279,7 +278,7 @@ public:
 	{
 		for(int v=0; v<3; v++)
 		{
-			shadow_pair[v] = get(v) - transformed_light_coord;
+			shadow_pair[v] = get(v) - transformed_light_position;
 		}
 	}
 	
@@ -367,27 +366,38 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
 
 void apply_transform()
 {
-	// set the projection matrix 
+    static GLdouble fov;
+    
+    // set the projection matrix 
     glMatrixMode(GL_PROJECTION);  // operate on projection matrix
+
     glLoadIdentity();
     // this places camera at the origin and directs it toward (0,0,-infinity)
     // see man gluPerspective for the meaning of the parameters
     // I have no idea how I came up with the field of view :)
-    gluPerspective(89.98*(atan(zoom-2)+M_PI/2)/M_PI+0.01,1.0,5.0,50.0);
+    
+    if (update_fov) {
+        fov = 89.98*(atan(zoom-2)+M_PI/2)/M_PI+0.01;
+    }
+
+    gluPerspective(fov, 1.0, 5.0, 50.0);
     
     // build the modelview matrix
     glMatrixMode(GL_MODELVIEW);  // operate on modelview matrix
+    
     glLoadIdentity();
     
     // note that each transformation call multiplies the current matrix [here:modelview]
     //  ON THE RIGHT
     //  at this point, modelview matrix = identity
     
-    glTranslatef(0,0,-20);   // Move the model 'forward' with respect to the camera
+    if(firstEvah) {
+        glTranslatef(0,0,-20);   // Move the model 'forward' with respect to the camera
+    }
     
     // at this point, modelview matrix = T [translation by (0,0,-20)]
    // mat4x4d R = get_rotation();
-    glMultMatrixd(rotation_matrix.pointer());   // this applies a rotation R that is computed from the trackball UI
+    glMultMatrixf(rotation_matrix.pointer());   // this applies a rotation R that is computed from the trackball UI
     
     // at this point, modelview matrix = T*R
     //  this means rotation is applied first to every vertex, then translation
@@ -397,11 +407,7 @@ void apply_transform()
 
 // Draw the triangles of the models
 void draw_model()
-{    	
-	//apply_transform();
-	set_material_properties(1,1,1);		// set color to GREY
-	glPushMatrix();		
-	
+{    		
     glBegin(GL_TRIANGLES);
     
 	// For each triangle
@@ -418,71 +424,55 @@ void draw_model()
     }
     
     glEnd();
-	
-	glPopMatrix();
 }
 
 
 // Draw a shadow polygon for each triangle in shadow
 void draw_shadow()
-{
-	//apply_transform();
-    
-	glPushMatrix(); 
-	
+{    	
 	glBegin(GL_QUADS);
 	
 	// For each triangle
     for(int i=0; i<num_triangles; i++)
     {
-		
 		// If the triangle is in shadow 
-		if( !tri[i].lit() )
+		if( tri[i].shadowed() )
         {						
 			// Tell the triangle to calculate it's shadow
             tri[i].calc_shadow();
 
 			// For each face of the shadow
 			for(int v=0; v<3; v++)
-			{
-				// Set the normal for each face of the shadow
-				//glNormal3f( tri[i].shadow_normal[v][0], tri[i].shadow_normal[v][1], tri[i].shadow_normal[v][2] );
-				
+			{			
 				// First vertex (from the triangle)
 				glVertex3f( tri[i].get(v, 0), tri[i].get(v, 1), tri[i].get(v, 2) );
 				
 				// Second vertex (next vertex from the triangle)
 				glVertex3f( tri[i].get((v+1)%3, 0), tri[i].get((v+1)%3, 1), tri[i].get((v+1)%3, 2) );
 				
-				// Third vertex (calculated from the first vertex)
+				// Third vertex (calculated from the second vertex)
 				glVertex4f(tri[i].shadow_pair[(v+1)%3][0], tri[i].shadow_pair[(v+1)%3][1], tri[i].shadow_pair[(v+1)%3][2], 0);
 				
-				// Forth vertex (calculated from the second vertex)
+				// Forth vertex (calculated from the first vertex)
 				glVertex4f(tri[i].shadow_pair[v][0], tri[i].shadow_pair[v][1], tri[i].shadow_pair[v][2], 0);
 			}
 		}
     }
     
     glEnd();
-	
-	glPopMatrix(); 
 }
 
 
 // Transform the light coodinates
 void transform_light()
-{
-	// Get the modelview matrix    
-    double *r_temp = rotation_matrix.pointer();
+{	
+    float inverted_matrix[16];
     
-	float mv_temp[] = {r_temp[0], r_temp[1], r_temp[2], r_temp[3], r_temp[4], r_temp[5], r_temp[6], r_temp[7], r_temp[8], r_temp[9], r_temp[10], r_temp[11], r_temp[12], r_temp[13], r_temp[14], r_temp[15]};
-	
-	// Find the inverse transformation
-    float mv_matrix[16];
-	glhInvertMatrixf2(mv_temp, mv_matrix);
+	// Find the inverse transformation of the rotation matrix
+	glhInvertMatrixf2(rotation_matrix.pointer(), inverted_matrix);
 	
 	// Apply the transformation to the light coordinates
-	MultiplyMatrixByVector4by4OpenGL_FLOAT(transformed_light_coord.pointer(), mv_matrix, original_light_coord.pointer());
+	MultiplyMatrixByVector4by4OpenGL_FLOAT(transformed_light_position.pointer(), inverted_matrix, original_light_position.pointer());
 }
 
 
@@ -492,15 +482,11 @@ void init_light()
 	// Operate on modelview matrix
 	glMatrixMode(GL_MODELVIEW);  
 	
-	// Recalculate the position of the light for the shadow polygons
-	//transform_light();
-	
 	// Comment out to "fixate" the light
 	glLoadIdentity();            
 	
-	
 	// Load the location of the light source
-	glLightfv(GL_LIGHT0, GL_POSITION, original_light_coord.pointer());	
+	glLightfv(GL_LIGHT0, GL_POSITION, original_light_position.pointer());	
 	
 	// Initialize light source
 	GLfloat light_ambient[] =  { .1, .1, .1, 1.0 };
@@ -517,6 +503,24 @@ void init_light()
 }
 
 
+void initalize()
+{    
+    // set model color to grey
+    set_material_properties(1,1,1);	
+    
+    // set the lighting properties
+    init_light();
+    
+    // clear color buffer to white 
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    
+    glEnable(GL_LIGHTING); 
+    glCullFace(GL_BACK);
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_DEPTH_TEST);	
+    glDepthFunc(GL_LEQUAL);
+}
+
 
 // Draw the scene
 GLvoid draw()
@@ -527,32 +531,19 @@ GLvoid draw()
     // Get the trackball rotation for this pass 
     rotation_matrix = get_rotation();
     
-    init_light();
-    
     // Recalculate the position of the light for the shadow polygons
     transform_light();
 
     apply_transform();
-	
-    // FIRST PASS
     
-	// clear color buffer to white 
-	glClearColor(1.0, 1.0, 1.0, 1.0);
-	
-	// turn back-face culling on so the stencil buffer will only see the front faces
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
-	
-	// automatically scale normals to unit length after transformation
-	glEnable(GL_NORMALIZE);
-	glEnable(GL_DEPTH_TEST);	
-	glEnable(GL_LIGHTING); 
-	glDisable(GL_LIGHT0);
-	
-	// clear the color buffers and stencil buffer
+    // clear the color buffers and stencil buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	// draw the model without light
+    
+    // FIRST PASS, draw the model without light
+    
+	glDisable(GL_LIGHT0);
+	
 	draw_model();
 	
     
@@ -566,9 +557,8 @@ GLvoid draw()
     glDisable(GL_CULL_FACE);
 	
 	// set the depth and stencil functions
-	glDepthFunc(GL_LEQUAL);
-	glStencilFunc(GL_ALWAYS, 0x0, 0x0);
-    glClearStencil(0x0);
+	
+	glStencilFunc(GL_ALWAYS, 0, 0);
     glEnable(GL_STENCIL_TEST);
     
 	// increment the stencil buffer on the front faces
@@ -610,7 +600,7 @@ GLvoid draw()
 
 vec3df point_on_trackball_below_cursor(0,0,0);   // tracks point on trackball below mouse cursor
 vec3df last_down(0,0,0);                         // point on trackball where the button went down
-mat4x4d finished_rotation = Identity<double>();  // superposition of all finished rotations
+mat4x4f finished_rotation = Identity<float>();  // superposition of all finished rotations
 
 // finishing a rotation == releasing the left mouse button
 // variable used to update zoom factor 
@@ -619,21 +609,21 @@ GLint mprev[2];   // coordinates of last [mouse movement with middle button down
 
 // rotation being specified by the user
 // if left mouse button is down, the return value is Id
-mat4x4d get_current_rotation()
+mat4x4f get_current_rotation()
 {
     if (point_on_trackball_below_cursor==last_down)
-        return Identity<double>();
+        return Identity<float>();
     else
     {
         vec3d<GLfloat> axis = last_down^point_on_trackball_below_cursor;
         axis.normalize();
-        return Rotation<double>(axis[0],axis[1],axis[2],-acos(last_down*point_on_trackball_below_cursor));
+        return Rotation<float>(axis[0],axis[1],axis[2],-acos(last_down*point_on_trackball_below_cursor));
     }
 }
 
 
 // rotation to be applied as a part of the modelview matrix
-mat4x4d get_rotation()
+mat4x4f get_rotation()
 {
     return finished_rotation*get_current_rotation();
 }
@@ -698,6 +688,7 @@ GLvoid mouse_button(GLint btn, GLint state, GLint x, GLint y)
             case GLUT_UP:
                 is_middle_mouse_button_down = false;
                 zoom += 8*(y-mprev[1])/(float)height;
+                update_fov = true;
                 break;
         }
             break;
@@ -721,6 +712,7 @@ GLvoid button_motion(GLint x, GLint y)
         // middle button is down - update zoom factor (related to field of view - see draw()
         // also, save the 
         zoom += 8*(y-mprev[1])/(float)height;
+        update_fov = true;
         mprev[0] = x;
         mprev[1] = y;
     }
@@ -779,7 +771,7 @@ GLint main(int argc, char **argv)
     
     // create a GLUT window (not drawn until glutMainLoop() is entered)
     // wid is the window ID
-    wid = glutCreateWindow("Andy's shadow volume");    
+    wid = glutCreateWindow("Andy's Shadow Volume");    
     
     // time to register callbacks 
     
@@ -799,6 +791,8 @@ GLint main(int argc, char **argv)
     // function to draw contents of our window -- 
     //  this is where most of your work will focus!
     glutDisplayFunc(draw);
+    
+    initalize();
     
     // this is the event loop entry:
     // take event off the queue, call the handler, repeat
