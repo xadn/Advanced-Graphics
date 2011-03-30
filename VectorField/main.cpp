@@ -35,13 +35,15 @@ const char* VS2 = "vertex-shader2.c";
 const char* VS3 = "vertex-shader3.c";
 
 const char* VS = VS2;
-const char* PS = PS6;
+const char* PS = PS7;
 
 
 /* ----------------------------------------------------------- */
 
 // a few routines useful for reading shader programs from files
 //  and printing out status of a shader (e.g. compilation/linking errors)
+
+
 
 char *read_file ( const char *name )
 {
@@ -127,7 +129,7 @@ GLuint p;
 GLvoid draw()
 {
   glutSetWindow(wid);
-
+ 
   glClear(GL_COLOR_BUFFER_BIT);
 
   glMatrixMode(GL_PROJECTION);  
@@ -148,6 +150,7 @@ GLvoid draw()
 
   // use program p
   glUseProgram(p);
+  
 
   // just render a single quad with texture coords
   glBegin(GL_QUADS);
@@ -269,8 +272,7 @@ int main(int argc, char **argv)
       cout << "OpenGL 2.0 not supported" << endl;;
       return 1;
     }
-
-// 2560 × 1600
+  
   // create the noise texture
   glGenTextures(1,&noise_texture);
   glBindTexture(GL_TEXTURE_2D,noise_texture);
@@ -283,7 +285,6 @@ int main(int argc, char **argv)
   }
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-
 
   // Initialize shaders
   {
@@ -307,7 +308,9 @@ int main(int argc, char **argv)
     printProgramInfoLog(p);
     glLinkProgram(p);
     printProgramInfoLog(p);
+
   }
+  
 
   glutMainLoop();
 
