@@ -1,29 +1,30 @@
 
-// this file is a good starting point
+// Visualization of a Vector Field by Andy Niccolai on 3/30/2011
+// for Advanced Graphics at the Colorado School of Mines
+
+// dx = sin(15.0 * point.x + point.y);
+// dy = cos(4.0 * point.x + 11.0 * point.y);
 
 varying vec2 coords;
-uniform sampler2D tex;   // this is the texture!!
+uniform sampler2D tex;   			// this is the texture!!
 
 const float STEP_SIZE = 0.001;
-const int NUM_STEPS = 30;
-const float DIV_STEPS = 0.0333;
+const int NUM_STEPS = 10;			// each direction, half the number of total steps
 
 vec2 normalize(vec2 point)
 {
 	return point / sqrt(point.x*point.x+point.y*point.y);	
 }
 
-vec2 nextPoint(vec2 point)
+vec2 delta(vec2 point)
 {
-	vec2 delta;
+	vec2 d;
 	
-	delta.x = -point.y;
-	delta.y = point.x;
-	delta = normalize(delta);
+	d.x = sin(15.0 * point.x + point.y);
+	d.y = cos(4.0 * point.x + 11.0 * point.y);
+	d = normalize(d);
 	
-	point = point + STEP_SIZE * delta;
-	
-	return point;	
+	return d * STEP_SIZE;	
 }
 
 void main()
@@ -33,13 +34,23 @@ void main()
 	
 	for(int i=0; i<NUM_STEPS; i++)
 	{
-		point = nextPoint(point);
+		point = point + delta(point);		
 		color += texture2D(tex, point);
 	}	
 	
-	color = color*DIV_STEPS;
+	point = coords;
 	
-	gl_FragColor = color;   // just look up color; note the return value is of type vec4/RGBA
+	for(int i=0; i<NUM_STEPS; i++)
+	{
+		point = point - delta(point);
+		color += texture2D(tex, point);
+	}
+	
+	float totalSteps = float(2*NUM_STEPS);
+	
+	color = color/totalSteps;
+	
+	gl_FragColor = color;
 }
 
 

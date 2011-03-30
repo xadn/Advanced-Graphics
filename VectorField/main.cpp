@@ -27,13 +27,15 @@ const char* PS3 = "pixel-shader3.c";
 const char* PS4 = "pixel-shader4.c";
 const char* PS5 = "pixel-shader5.c";
 const char* PS6 = "pixel-shader6.c";
+const char* PS7 = "pixel-shader7.c";
+const char* PS8 = "pixel-shader8.c";
 
 const char* VS1 = "vertex-shader1.c";
 const char* VS2 = "vertex-shader2.c";
 const char* VS3 = "vertex-shader3.c";
 
 const char* VS = VS2;
-const char* PS = PS5;
+const char* PS = PS6;
 
 
 /* ----------------------------------------------------------- */
@@ -268,6 +270,7 @@ int main(int argc, char **argv)
       return 1;
     }
 
+// 2560 × 1600
   // create the noise texture
   glGenTextures(1,&noise_texture);
   glBindTexture(GL_TEXTURE_2D,noise_texture);
