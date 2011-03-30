@@ -13,7 +13,26 @@
 
 using namespace std;
 
+
 const char* WINDOW_TITLE = "Andy's Vector Field Visualization";
+
+// try the other combinations of shaders here:
+// 1- a procedureal texture
+// 2- simple texture lookup (equivalent to what the fixed functionality pipeline would do)
+// 3- a (very bad) implementation of a Gaussian filter
+
+const char* PS1 = "pixel-shader1.c";
+const char* PS2 = "pixel-shader2.c";
+const char* PS3 = "pixel-shader3.c";
+const char* PS4 = "pixel-shader4.c";
+const char* PS5 = "pixel-shader5.c";
+
+const char* VS1 = "vertex-shader1.c";
+const char* VS2 = "vertex-shader2.c";
+const char* VS3 = "vertex-shader3.c";
+
+const char* VS = VS2;
+const char* PS = PS5;
 
 
 /* ----------------------------------------------------------- */
@@ -153,19 +172,19 @@ GLvoid draw()
 
 GLvoid mouse_button(GLint btn, GLint state, GLint x, GLint y)
 {
-  if (btn==GLUT_MIDDLE_BUTTON)
+    if (btn==GLUT_MIDDLE_BUTTON)
     {
-      if (state==GLUT_DOWN)
-	{
-	  is_middle_mouse_button_down = true;
-	  mprev[0] = x;
-	  mprev[1] = y;
-	}
-      if (state==GLUT_UP)
-	{
-	  is_middle_mouse_button_down = false;
-	  zoom += 8*(y-mprev[1])/(float)height;
-	}
+        if (state==GLUT_DOWN)
+        {
+            is_middle_mouse_button_down = true;
+            mprev[0] = x;
+            mprev[1] = y;
+        }
+        if (state==GLUT_UP)
+        {
+            is_middle_mouse_button_down = false;
+            zoom += 8*(y-mprev[1])/(float)height;
+        }
     }
 }
 
@@ -264,12 +283,8 @@ int main(int argc, char **argv)
 
   // Initialize shaders
   {
-    // try the other combinations of shaders here:
-    // 1- a procedureal texture
-    // 2- simple texture lookup (equivalent to what the fixed functionality pipeline would do)
-    // 3- a (very bad) implementation of a Gaussian filter
-    const GLchar *vsh = read_file("vertex-shader1.txt");
-    const GLchar *fsh = read_file("pixel-shader1.txt");
+    const GLchar *vsh = read_file(VS);
+    const GLchar *fsh = read_file(PS);
 
     GLint vshid = glCreateShader(GL_VERTEX_SHADER);
     GLint fshid = glCreateShader(GL_FRAGMENT_SHADER);
