@@ -26,6 +26,7 @@ const char* PS2 = "pixel-shader2.c";
 const char* PS3 = "pixel-shader3.c";
 const char* PS4 = "pixel-shader4.c";
 const char* PS5 = "pixel-shader5.c";
+const char* PS6 = "pixel-shader6.c";
 
 const char* VS1 = "vertex-shader1.c";
 const char* VS2 = "vertex-shader2.c";
