@@ -2,16 +2,15 @@
 // Visualization of a Vector Field by Andy Niccolai on 3/30/2011
 // for Advanced Graphics at the Colorado School of Mines
 
-// dx = sin(15.0 * point.x + point.y);
-// dy = cos(4.0 * point.x + 11.0 * point.y);
+// f(x,y)=(0.4*sin(x'+10y')+y'
+	    // ,0.4*sin(x'+10y')-x'),
+// where x'=2x-1 and y'=2y-1. The range of x and y is 0...1
 
 varying vec2 coords;
 uniform sampler2D tex;   			// this is the texture!!
 
-uniform float timeStep;
-
 const float STEP_SIZE = 0.001;
-const int NUM_STEPS = 10;			// each direction, half the number of total steps
+const int NUM_STEPS = 30;			// each direction, half the number of total steps
 
 vec2 normalize(vec2 point)
 {
@@ -22,8 +21,8 @@ vec2 delta(vec2 point)
 {
 	vec2 d;
 	
-	d.x = sin(timeStep * 2.0 * point.x + point.y);
-	d.y = cos(timeStep * point.x + 11.0 * point.y);
+	d.x = 0.4*sin(2.0*point.x-1.0 + 10.0*(2.0*point.y-1.0) ) + (2.0*point.y-1.0);
+	d.y = 0.4*sin(2.0*point.x-1.0 + 10.0*(2.0*point.y-1.0) ) - (2.0*point.x-1.0);
 	d = normalize(d);
 	
 	return d * STEP_SIZE;	

@@ -21,22 +21,36 @@ const char* WINDOW_TITLE = "Andy's Vector Field Visualization";
 // 2- simple texture lookup (equivalent to what the fixed functionality pipeline would do)
 // 3- a (very bad) implementation of a Gaussian filter
 
-const char* PS1 = "pixel-shader1.c";
-const char* PS2 = "pixel-shader2.c";
-const char* PS3 = "pixel-shader3.c";
-const char* PS4 = "pixel-shader4.c";
-const char* PS5 = "pixel-shader5.c";
-const char* PS6 = "pixel-shader6.c";
-const char* PS7 = "pixel-shader7.c";
-const char* PS8 = "pixel-shader8.c";
+string PS[] = {\
+  "pixel-shader6.c",\
+  "pixel-shader1.c",\
+  "pixel-shader2.c",\
+  "pixel-shader3.c",\
+  "pixel-shader4.c",\
+  "pixel-shader5.c",\
+  "pixel-shader6.c",\
+  "pixel-shader7.c"\
+  };
 
-const char* VS1 = "vertex-shader1.c";
-const char* VS2 = "vertex-shader2.c";
-const char* VS3 = "vertex-shader3.c";
+string VS [] = {\
+  "vertex-shader2.c",\
+  "vertex-shader1.c",\
+  "vertex-shader2.c",\
+  "vertex-shader3.c"\
+};
 
-const char* VS = VS2;
-const char* PS = PS7;
-
+void showOptions()
+{
+  cout << "\nprogram arguments:\n\n";
+  
+  cout << "1 - pixel-shader1.c // pink and blue procedureal texture\n";
+  cout << "2 - pixel-shader2.c // simple texture lookup\n";
+  cout << "3 - pixel-shader3.c // gaussian filter\n";
+  cout << "4 - pixel-shader4.c // horizontal averaging\n";
+  cout << "5 - pixel-shader5.c // radial vector field\n";
+  cout << "6 - pixel-shader6.c // source and sink field\n";
+  cout << "7 - pixel-shader7.c // curvy one from the screenshot on blackboard\n\n";
+}
 
 /* ----------------------------------------------------------- */
 
@@ -248,6 +262,8 @@ GLvoid reshape(GLint vpw, GLint vph)
 
 int main(int argc, char **argv)
 {  
+  showOptions();
+  
   glutInit(&argc,argv);
 
   glutInitWindowSize(width,height);
@@ -286,10 +302,16 @@ int main(int argc, char **argv)
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 
+  // Let the user select a shader
+  int shaderNumber = 0;
+  if (argc > 1) {
+    shaderNumber = atoi(argv[1]);
+  }
+  
   // Initialize shaders
   {
-    const GLchar *vsh = read_file(VS);
-    const GLchar *fsh = read_file(PS);
+    const GLchar *vsh = read_file(VS[0].c_str());
+    const GLchar *fsh = read_file(PS[shaderNumber].c_str());
 
     GLint vshid = glCreateShader(GL_VERTEX_SHADER);
     GLint fshid = glCreateShader(GL_FRAGMENT_SHADER);
