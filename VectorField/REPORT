@@ -1,0 +1,19 @@
+Andy Niccolai
+Project 2
+Advanced Graphics 
+etc...
+
+This implementation has absolutely no problems... It is 100% perfect. Guaranteed or your money back!
+
+Oh no, you didn't pay for this code?
+
+You mean to tell me that I paid out-of-state tuition to write this code?
+
+Problem 1)
+Floating point precision isn't standardized on older GPU's. New one's even support double  precision, but like everything else with graphics cards it's a crap-shoot.
+
+Problem 2)
+We have no control over what features the user's GPU supports. We would need to write code for each version of OpenGL in order to support a large number of cards.
+
+Problem 3)
+Euler's method kinda sucks. There are more accurate methods of estimating functions.

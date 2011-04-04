@@ -9,6 +9,8 @@
 varying vec2 coords;
 uniform sampler2D tex;   			// this is the texture!!
 
+uniform float u_time;
+
 const float STEP_SIZE = 0.001;
 const int NUM_STEPS = 30;			// each direction, half the number of total steps
 
@@ -21,8 +23,8 @@ vec2 delta(vec2 point)
 {
 	vec2 d;
 	
-	d.x = 0.4*sin(2.0*point.x-1.0 + 10.0*(2.0*point.y-1.0) ) + (2.0*point.y-1.0);
-	d.y = 0.4*sin(2.0*point.x-1.0 + 10.0*(2.0*point.y-1.0) ) - (2.0*point.x-1.0);
+	d.x = 0.4*sin(sin(u_time) * 20.0*point.x-1.0 + 10.0*(2.0*point.y-1.0) ) + (2.0*point.y-1.0);
+	d.y = 0.4*sin(cos(u_time) * 20.0*point.x-1.0 + 10.0*(2.0*point.y-1.0) ) - (2.0*point.x-1.0);
 	d = normalize(d);
 	
 	return d * STEP_SIZE;	

@@ -8,7 +8,7 @@
 varying vec2 coords;
 uniform sampler2D tex;   			// this is the texture!!
 
-const float STEP_SIZE = 0.001;
+const float STEP_SIZE = 1.0/1024.0;
 const int NUM_STEPS = 30;			// each direction, half the number of total steps
 
 vec2 normalize(vec2 point)

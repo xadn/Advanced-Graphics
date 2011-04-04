@@ -1,0 +1,23 @@
+TO COMPILE..
+Type make to compile the project!
+
+Works on Mac and Linux!
+
+TO RUN...
+./main to see the default shader I've chosen
+
+./main <1-7> to select one of the other shaders
+
+ex ./main 6 to see pixel-shader6.c
+
+WHAT ARE THESE FILES???
+REPORT - A discussion of potential problems with my implementation
+pixel-shader1.c - pink and blue procedural texture
+pixel-shader2.c - simple texture lookup
+pixel-shader3.c - gaussian filter
+pixel-shader4.c - horizontal averaging
+pixel-shader5.c - radial vector field
+pixel-shader6.c - source and sink field
+pixel-shader7.c - curvy one from the screenshot on blackboard
+sourcesink.png - screenshot of pixel-shader 6
+swirlything.png - screenshot of pixel-shader 7
