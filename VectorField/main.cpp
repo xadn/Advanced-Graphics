@@ -175,7 +175,7 @@ GLvoid draw()
   // use program p
   glUseProgram(p);
   
-  u_time += 0.001;
+  u_time += 0.01;
   u_location = glGetUniformLocation(p, u_name);
   glUniform1f(u_location, u_time);
   

@@ -10,6 +10,7 @@ uniform sampler2D tex;   			// this is the texture!!
 
 const float STEP_SIZE = 0.001;
 const int NUM_STEPS = 10;			// each direction, half the number of total steps
+uniform float u_time;
 
 vec2 normalize(vec2 point)
 {
