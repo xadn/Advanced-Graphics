@@ -1,1 +1,7 @@
-Source code for Advanced Graphics Spring 2011
+Source code for Advanced Graphics Spring 2011 at the Colorado School of Mines
+
+ShadowVolume - 
+Display realistic shadows using the shadow volume algorithm. The program first calculates a polygon to represent the projection of the shadow of the model and then uses the stencil buffer to mask out the areas in shadow.
+
+VectorField - 
+Visualize 2D field lines using shaders. The field lines are followed backwards and forwards from each pixel and samples are taken from a randomly generated texture to produce a smearing along the field line.
