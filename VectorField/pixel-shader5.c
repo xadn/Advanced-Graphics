@@ -33,7 +33,7 @@ void main()
 	vec4 color;
 	vec2 point = coords;
 	
-	int steps = int(100.0*sin(5.0*u_time) + 1.0);
+	int steps = NUM_STEPS;
 
 	for(int i=0; i<steps; i++)
 	{

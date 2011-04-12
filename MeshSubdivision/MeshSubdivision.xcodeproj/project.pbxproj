@@ -1,0 +1,215 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7E92A85F1354D2F2004F7C35 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E92A85E1354D2F2004F7C35 /* main.cpp */; };
+		7E92A8711354D34D004F7C35 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E92A86E1354D34D004F7C35 /* Cocoa.framework */; };
+		7E92A8721354D34D004F7C35 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E92A86F1354D34D004F7C35 /* GLUT.framework */; };
+		7E92A8731354D34D004F7C35 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E92A8701354D34D004F7C35 /* OpenGL.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7E92A8581354D2F2004F7C35 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		7E92A85A1354D2F2004F7C35 /* MeshSubdivision */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MeshSubdivision; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E92A85E1354D2F2004F7C35 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		7E92A86E1354D34D004F7C35 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		7E92A86F1354D34D004F7C35 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		7E92A8701354D34D004F7C35 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		7E92A8741354D393004F7C35 /* mat4x4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mat4x4.h; sourceTree = "<group>"; };
+		7E92A8751354D393004F7C35 /* vec3d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec3d.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7E92A8571354D2F2004F7C35 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E92A8711354D34D004F7C35 /* Cocoa.framework in Frameworks */,
+				7E92A8721354D34D004F7C35 /* GLUT.framework in Frameworks */,
+				7E92A8731354D34D004F7C35 /* OpenGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7E92A84F1354D2F2004F7C35 = {
+			isa = PBXGroup;
+			children = (
+				7E92A86E1354D34D004F7C35 /* Cocoa.framework */,
+				7E92A86F1354D34D004F7C35 /* GLUT.framework */,
+				7E92A8701354D34D004F7C35 /* OpenGL.framework */,
+				7E92A85D1354D2F2004F7C35 /* MeshSubdivision */,
+				7E92A85B1354D2F2004F7C35 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7E92A85B1354D2F2004F7C35 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7E92A85A1354D2F2004F7C35 /* MeshSubdivision */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7E92A85D1354D2F2004F7C35 /* MeshSubdivision */ = {
+			isa = PBXGroup;
+			children = (
+				7E92A8741354D393004F7C35 /* mat4x4.h */,
+				7E92A8751354D393004F7C35 /* vec3d.h */,
+				7E92A85E1354D2F2004F7C35 /* main.cpp */,
+			);
+			path = MeshSubdivision;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7E92A8591354D2F2004F7C35 /* MeshSubdivision */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E92A8631354D2F2004F7C35 /* Build configuration list for PBXNativeTarget "MeshSubdivision" */;
+			buildPhases = (
+				7E92A8561354D2F2004F7C35 /* Sources */,
+				7E92A8571354D2F2004F7C35 /* Frameworks */,
+				7E92A8581354D2F2004F7C35 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MeshSubdivision;
+			productName = MeshSubdivision;
+			productReference = 7E92A85A1354D2F2004F7C35 /* MeshSubdivision */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7E92A8511354D2F2004F7C35 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				ORGANIZATIONNAME = "Colorado School of Mines";
+			};
+			buildConfigurationList = 7E92A8541354D2F2004F7C35 /* Build configuration list for PBXProject "MeshSubdivision" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7E92A84F1354D2F2004F7C35;
+			productRefGroup = 7E92A85B1354D2F2004F7C35 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7E92A8591354D2F2004F7C35 /* MeshSubdivision */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7E92A8561354D2F2004F7C35 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E92A85F1354D2F2004F7C35 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7E92A8611354D2F2004F7C35 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		7E92A8621354D2F2004F7C35 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		7E92A8641354D2F2004F7C35 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7E92A8651354D2F2004F7C35 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7E92A8541354D2F2004F7C35 /* Build configuration list for PBXProject "MeshSubdivision" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E92A8611354D2F2004F7C35 /* Debug */,
+				7E92A8621354D2F2004F7C35 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7E92A8631354D2F2004F7C35 /* Build configuration list for PBXNativeTarget "MeshSubdivision" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E92A8641354D2F2004F7C35 /* Debug */,
+				7E92A8651354D2F2004F7C35 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7E92A8511354D2F2004F7C35 /* Project object */;
+}
