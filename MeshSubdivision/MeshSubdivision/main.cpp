@@ -23,6 +23,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <algorithm>
 #include "vec3d.h"
 #include "mat4x4.h"
 
@@ -31,6 +32,8 @@ using namespace std;
 
 /* --------------------------------------------- */
 
+const char* WINDOW_TITLE = "Mesh Subdivision Project - Andy Niccolai";
+
 // mesh data
 
 int triangles,vertices;
@@ -38,6 +41,12 @@ vec3dd *v;   // vertex table
 vec3di *t;   // triangle table
 vec3dd *n;   // triangle normals
 vec3dd bbmin,bbmax;  // corners of the bounding box
+
+int* vertex_degrees;            // degree of verticies
+vector<int>* incidence_table;   // [vertex][triangle]   => triangles incident to every vertex
+vector<int>* adjacency_table;   // [triangle][triangle] => 3 triangles adjacent to each triangle
+
+typedef vector<int>::iterator int_it;
 
 // reading a mesh
 
@@ -62,9 +71,8 @@ void read_mesh ( ifstream &ifs )
         n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
 }
 
-int* vertex_degrees; // degree of verticies
 
-void calc_vertex_degrees()
+void find_vertex_degrees()
 {
     vertex_degrees = new int[vertices];
     
@@ -75,7 +83,6 @@ void calc_vertex_degrees()
     }
 }
 
-vector<int>* incidence_table; // [vertex][triangle] => triangles incident to every vertex
 
 void find_incident_triangles()
 {
@@ -88,13 +95,6 @@ void find_incident_triangles()
     }
 }
 
-vector<int>* adjacency_table; // [triangle][triangle]
-
-//  new vector of possible adj triangles
-//  for each vertex of the triangle
-//      add incident triangles to the vector
-// use a map!
-typedef vector<int>::iterator int_it;
 
 vector<int> adjacent_to(int tri)
 {
@@ -115,19 +115,80 @@ vector<int> adjacent_to(int tri)
     return adjacent_triangles;
 }
 
+
 void find_adjacent_triangles()
 {
     adjacency_table = new vector<int>[triangles];
     
     for (int i=0; i<triangles; i++) {
         adjacency_table[i] = adjacent_to(i);
-    }    
+    }   
+}
+
+
+
+int** edge_table;
+
+int name_edge(int a, int b)
+{
+    if (a > b) {
+        return a * 100 + b;
+    }
+    else {
+        return b * 100 + a;
+    }
+}
+
+
+void label_edges()
+{
+    edge_table = new int*[triangles];
+    
+    // Initalize the table to negative 1
+    for (int i=0; i<triangles; i++) {
+        edge_table[i] = new int[3];
+        for (int j=0; j<3; j++) {
+            edge_table[i][j] = -1;
+        }        
+    }
+    
+    int count = 0;
+    
+    for (int i=0; i<triangles; i++) {
+        for (int j=0; j<3; j++) {
+            if (edge_table[i][j] == -1) {
+                
+                edge_table[i][j] = count;
+                
+                int opp_tri = adjacency_table[i][j];
+                
+                for (int k=0; k<3; k++) {
+                    if (adjacency_table[opp_tri][k] == i) {
+                        edge_table[opp_tri][k] = count;
+                    }
+                }
+                count++;
+            }
+        }
+    }
+    
+    printf("\ncount: %i\n", count);
+    printf("triangles: %i\n", triangles);
+}
+
+
+void init_mesh()
+{
+    find_vertex_degrees();
+    find_incident_triangles();
+    find_adjacent_triangles();
+    label_edges();
 }
 
 
 /* --------------------------------------------- */
 
-const char* WINDOW_TITLE = "Mesh Subdivision Project - Andy Niccolai";
+
 
 // global variables -- used for communication between callback functions
 
@@ -168,7 +229,17 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambient_and_diffuse);
 }
 
+const int TARGET = 0;
+
 /* --------------------------------------------- */
+bool is_adj(int tri)
+{    
+    for (int_it it=adjacency_table[TARGET].begin(); it != adjacency_table[TARGET].end(); it++)
+        if (*it == tri)
+            return true;
+           
+    return false;
+}
 
 void draw_scene ( )
 {
@@ -184,9 +255,21 @@ void draw_scene ( )
     glScalef(2/s,2/s,2/s);
     glTranslated(mc[0],mc[1],mc[2]);
     
+    
     glBegin(GL_TRIANGLES);
     for ( i=0; i<triangles; i++ )
     {
+        if (i == TARGET) {
+            set_material_properties(0,0.5,1);   // Blue-green!
+        }
+        else if (is_adj(i)) {
+            set_material_properties(0,0,1);     // Blue!
+        }
+        else {
+            set_material_properties(1,1,1);     // White!
+        }
+            
+        
         glNormal3f(n[i][0],n[i][1],n[i][2]);
         glVertex3f(v[t[i][0]][0],v[t[i][0]][1],v[t[i][0]][2]);
         glVertex3f(v[t[i][1]][0],v[t[i][1]][1],v[t[i][1]][2]);
@@ -501,9 +584,7 @@ GLint main(int argc, char **argv)
     }
     read_mesh(ifs);
     
-    calc_vertex_degrees();
-    find_incident_triangles();
-    find_adjacent_triangles();
+    init_mesh();
     
     // this is the event loop entry:
     // take event off the queue, call the handler, repeat
