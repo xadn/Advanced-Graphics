@@ -21,6 +21,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include <map>
 #include "vec3d.h"
 #include "mat4x4.h"
 
@@ -59,6 +61,69 @@ void read_mesh ( ifstream &ifs )
     for ( i=0; i<triangles; i++ )
         n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
 }
+
+int* vertex_degrees; // degree of verticies
+
+void calc_vertex_degrees()
+{
+    vertex_degrees = new int[vertices];
+    
+    for (int i=0; i<triangles; i++) {
+        for (int j=0; j<3; j++) {
+            vertex_degrees[t[i][j]]++;
+        }
+    }
+}
+
+vector<int>* incidence_table; // [vertex][triangle] => triangles incident to every vertex
+
+void find_incident_triangles()
+{
+    incidence_table = new vector<int>[vertices];
+    
+    for (int i=0; i<triangles; i++) {
+        for (int j=0; j<3; j++) {
+            incidence_table[t[i][j]].push_back(i);
+        }
+    }
+}
+
+vector<int>* adjacency_table; // [triangle][triangle]
+
+//  new vector of possible adj triangles
+//  for each vertex of the triangle
+//      add incident triangles to the vector
+// use a map!
+typedef vector<int>::iterator int_it;
+
+vector<int> adjacent_to(int tri)
+{
+    map<int, bool> occurence;
+    vector<int> adjacent_triangles;
+    
+    for (int i=0; i<3; i++) {
+        for (int_it it=incidence_table[t[tri][i]].begin(); it != incidence_table[t[tri][i]].end(); it++) {            
+            if ( (occurence[*it]) && (*it != tri) ) {
+                adjacent_triangles.push_back(*it);
+            }
+            else {
+                occurence[*it] = true;
+            }
+        }
+    }
+    
+    return adjacent_triangles;
+}
+
+void find_adjacent_triangles()
+{
+    adjacency_table = new vector<int>[triangles];
+    
+    for (int i=0; i<triangles; i++) {
+        adjacency_table[i] = adjacent_to(i);
+    }    
+}
+
 
 /* --------------------------------------------- */
 
@@ -435,6 +500,10 @@ GLint main(int argc, char **argv)
         return 0;
     }
     read_mesh(ifs);
+    
+    calc_vertex_degrees();
+    find_incident_triangles();
+    find_adjacent_triangles();
     
     // this is the event loop entry:
     // take event off the queue, call the handler, repeat
