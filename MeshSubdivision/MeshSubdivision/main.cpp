@@ -34,30 +34,24 @@ using namespace std;
 
 const char* WINDOW_TITLE = "Mesh Subdivision Project - Andy Niccolai";
 
-const int SUB_ITERATIONS = 2;
+const int SUB_ITERATIONS = 4;
 
 // mesh data
 
-int vertices;
-int triangles;
-int edges;
-vec3dd *v;   // vertex table
-vec3di *t;   // triangle table
-vec3dd *n;   // triangle normals
-vec3dd bbmin,bbmax;  // corners of the bounding box
+typedef vector<int>::iterator int_it; // stl iterator for a vector of ints
 
-// triangles incident to every vertex
-vector<int>* incidence_table; // [vertex][triangle_index] = triangle
+int vertices;           // number of vertices
+int triangles;          // number of triangles
+int edges;              // number of edges
+vec3dd *v;              // vertex table
+vec3di *t;              // triangle table
+vec3dd *n;              // triangle normals
+vec3dd bbmin,bbmax;     // corners of the bounding box
 
-// 3 triangles adjacent to each triangle
-vec3di* adjacency_table; // [triangle][opp_edge] = triangle 
-
-// edges with unique labels
-vec3di* edge_table; // [triangle][opp_edge] => edge
-
-vec3dd** edge_list;
-
-typedef vector<int>::iterator int_it;
+vector<int>* incidence_table;   // triangles incident to every vertex, [vertex][triangle_index] = triangle
+vec3di* adjacency_table;        // 3 triangles adjacent to each triangle, [triangle][opp_edge] = triangle 
+vec3di* edge_table;             // edges with unique labels, [triangle][opp_edge] => edge
+vec3dd** edge_list;             // stores the verticies of each edge to create new points
 
 
 // reading a mesh
@@ -104,15 +98,11 @@ int next_point(int i)
 //vector<int> adjacent_to(int tri)
 vec3di adjacent_to(int tri)
 {
-    
-    //vector<int> adjacent_triangles;
-    //adjacent_triangles.resize(3);
     vec3di adjacent_triangles;
     
     // find the triangle opposite to each vertex
     for (int i=0; i<3; i++) {
-        map<int, bool> occurence;
-        
+        map<int, bool> occurence;        
         int a = next_point(i);
         int b = next_point(a);
         
@@ -211,20 +201,26 @@ void label_edges()
 }
 
 
-int s_vertices;
-int s_triangles;
-vec3dd* s_v;                    // vertex table for subdivided surface
-vec3di* s_t;                    // triangle table for subdivided surface
-vec3dd* s_n;                    // normals
+int s_vertices;     // number of vertices after subdivison
+int s_triangles;    // number of triangles after subdivision
+int old_vertices;   // number of vertices in the previous iteration
+vec3dd* s_v;        // vertex table for subdivided surface
+vec3di* s_t;        // triangle table for subdivided surface
+vec3dd* s_n;        // normals
+vec3dd* old_v;      // vertex table
 
+
+const double D3_ORIG_WEIGHT     = 7.0/16.0;
+const double D3_NEIGHBOR_WEIGHT = 3.0/16.0;    
+const double ORIG_WEIGHT        = 5.0/8.0;
+const double NEIGHBOR_WEIGHT    = 3.0/8.0;
 
 vec3dd move_point(int vert)
 {    
     vec3dd p;    
     vec3dd original = v[vert];
-    
     int degree = 0;
-    
+
     for (int_it it = incidence_table[vert].begin(); it != incidence_table[vert].end(); it++) {
         for (int i=0; i<3; i++) {
             if (t[*it][i] != vert) {
@@ -235,29 +231,31 @@ vec3dd move_point(int vert)
         }
     }
     
-    if (degree == 3)
-    {
-        original *= 7.0/16.0;
-        p *= 3.0/16.0;        
+    // divide by 2 since vertices are double counted
+    if (degree/2 == 3) {
+        original *= D3_ORIG_WEIGHT;
+        p *= D3_NEIGHBOR_WEIGHT/2.0;
     }
-    else
-    {
-        original *= 5.0/8.0;
-        p *= 3.0/(8.0*(double)degree);
+    else {
+        original *= ORIG_WEIGHT;
+        p *= NEIGHBOR_WEIGHT/(double)degree; // dividing by degrees accounts for double counting
     }
     p += original;
-    
+
     return p;
 }
 
 
+const double EDGE_WEIGHT    = 3.0/8.0;
+const double ADJ_WEIGHT     = 1.0/8.0; 
+
 vec3dd create_point(int edge)
 {
     vec3dd* e = edge_list[edge];  
-    e[0] *= 3.0/8.0;
-    e[1] *= 3.0/8.0;
-    e[2] *= 1.0/8.0;
-    e[3] *= 1.0/8.0;    
+    e[0] *= EDGE_WEIGHT;
+    e[1] *= EDGE_WEIGHT;
+    e[2] *= ADJ_WEIGHT;
+    e[3] *= ADJ_WEIGHT;    
     return e[0]+e[1]+e[2]+e[3];
 }
 
@@ -324,15 +322,15 @@ void associate_triangles()
     
 }
 
-vec3dd *old_v;   // vertex table
-int old_vertices;
+
 
 
 void swap_mesh()
 {
+    delete[] old_v;
     old_v = v;
     old_vertices = vertices;
-    delete[] old_v;
+    
     delete[] t;
     delete[] n;
     
@@ -430,7 +428,7 @@ void render_points()
     }
     
     glBegin(GL_POINTS);
-    set_material_properties(0,0,1);     // black! displaced origial vertices
+    set_material_properties(0,0,1);     // blue! displaced origial vertices
     for(int i=0; i<old_vertices; i++) {
         glVertex3f(v[i][0], v[i][1], v[i][2]);        
     }
@@ -764,8 +762,11 @@ GLint main(int argc, char **argv)
     }
     read_mesh(ifs);
     
-    for (int i=0; i < SUB_ITERATIONS; i++)
+    for (int i=0; i < SUB_ITERATIONS; i++) {
+        cout << "Iteration: " << i << endl;
         init_mesh();
+        cout << endl;
+    }
     
     // this is the event loop entry:
     // take event off the queue, call the handler, repeat
