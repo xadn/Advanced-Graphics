@@ -34,21 +34,34 @@ using namespace std;
 
 const char* WINDOW_TITLE = "Mesh Subdivision Project - Andy Niccolai";
 
+const int SUB_ITERATIONS = 2;
+
 // mesh data
 
-int triangles,vertices;
+int vertices;
+int triangles;
+int edges;
 vec3dd *v;   // vertex table
 vec3di *t;   // triangle table
 vec3dd *n;   // triangle normals
 vec3dd bbmin,bbmax;  // corners of the bounding box
 
-int* vertex_degrees;            // degree of verticies
-vector<int>* incidence_table;   // [vertex][triangle]   => triangles incident to every vertex
-vector<int>* adjacency_table;   // [triangle][triangle] => 3 triangles adjacent to each triangle
+// triangles incident to every vertex
+vector<int>* incidence_table; // [vertex][triangle_index] = triangle
+
+// 3 triangles adjacent to each triangle
+vec3di* adjacency_table; // [triangle][opp_edge] = triangle 
+
+// edges with unique labels
+vec3di* edge_table; // [triangle][opp_edge] => edge
+
+vec3dd** edge_list;
 
 typedef vector<int>::iterator int_it;
 
+
 // reading a mesh
+
 
 void read_mesh ( ifstream &ifs )
 {
@@ -67,20 +80,8 @@ void read_mesh ( ifstream &ifs )
         bbmax |= v[i];
     }
     n = new vec3dd[triangles];
-    for ( i=0; i<triangles; i++ )
+    for (int i=0; i<triangles; i++ )
         n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
-}
-
-
-void find_vertex_degrees()
-{
-    vertex_degrees = new int[vertices];
-    
-    for (int i=0; i<triangles; i++) {
-        for (int j=0; j<3; j++) {
-            vertex_degrees[t[i][j]]++;
-        }
-    }
 }
 
 
@@ -95,19 +96,35 @@ void find_incident_triangles()
     }
 }
 
-
-vector<int> adjacent_to(int tri)
+int next_point(int i)
 {
-    map<int, bool> occurence;
-    vector<int> adjacent_triangles;
+    return (i+1)%3;
+}
+
+//vector<int> adjacent_to(int tri)
+vec3di adjacent_to(int tri)
+{
     
+    //vector<int> adjacent_triangles;
+    //adjacent_triangles.resize(3);
+    vec3di adjacent_triangles;
+    
+    // find the triangle opposite to each vertex
     for (int i=0; i<3; i++) {
-        for (int_it it=incidence_table[t[tri][i]].begin(); it != incidence_table[t[tri][i]].end(); it++) {            
+        map<int, bool> occurence;
+        
+        int a = next_point(i);
+        int b = next_point(a);
+        
+        // Mark the triangles incident to A
+        for (int_it it=incidence_table[t[tri][a]].begin(); it != incidence_table[t[tri][a]].end(); it++) {            
+            occurence[*it] = true;
+        }
+        
+        // Search triangles incident to B for a mark
+        for (int_it it=incidence_table[t[tri][b]].begin(); it != incidence_table[t[tri][b]].end(); it++) {            
             if ( (occurence[*it]) && (*it != tri) ) {
-                adjacent_triangles.push_back(*it);
-            }
-            else {
-                occurence[*it] = true;
+                adjacent_triangles[i] = *it;
             }
         }
     }
@@ -116,9 +133,11 @@ vector<int> adjacent_to(int tri)
 }
 
 
+// 3 triangles adjacent to each triangle
+// [triangle][opp_edge] = triangle 
 void find_adjacent_triangles()
 {
-    adjacency_table = new vector<int>[triangles];
+    adjacency_table = new vec3di[triangles];
     
     for (int i=0; i<triangles; i++) {
         adjacency_table[i] = adjacent_to(i);
@@ -126,69 +145,218 @@ void find_adjacent_triangles()
 }
 
 
-
-int** edge_table;
-
-int name_edge(int a, int b)
-{
-    if (a > b) {
-        return a * 100 + b;
-    }
-    else {
-        return b * 100 + a;
-    }
-}
-
-
 void label_edges()
 {
-    edge_table = new int*[triangles];
+    edges = 3*triangles/2;
+    edge_table = new vec3di[triangles];
+    edge_list = new vec3dd*[edges];
     
     // Initalize the table to negative 1
     for (int i=0; i<triangles; i++) {
-        edge_table[i] = new int[3];
-        for (int j=0; j<3; j++) {
-            edge_table[i][j] = -1;
-        }        
+            edge_table[i] = vec3di(-1, -1, -1);
     }
     
+    // labels are generated serially
+    // should have a range of [0, edges)
+    int label = -1;
     int count = 0;
     
+    // loop over each edge (actually the vertex opposite the edge) of each triangle
     for (int i=0; i<triangles; i++) {
         for (int j=0; j<3; j++) {
-            if (edge_table[i][j] == -1) {
+            count++;
+            if (edge_table[i][j] == -1)
+            {
+                //cout << edge_table[i][j] << endl;
                 
-                edge_table[i][j] = count;
+                label++;
                 
+                //cout << label << endl;
+                // label this edge
+                edge_table[i][j] = label;
+                
+                // find the other two vertices on the triangle
+                int a = next_point(j);
+                int b = next_point(a);                
+                
+                // put these vertices in a new array for later
+                edge_list[label] = new vec3dd[4];
+                edge_list[label][0] = v[t[i][a]];
+                edge_list[label][1] = v[t[i][b]];
+                edge_list[label][2] = v[t[i][j]];
+                
+                // find the adjacent triangle
                 int opp_tri = adjacency_table[i][j];
                 
+
+                // find the vertex of the opposite triangle which is not on the edge
                 for (int k=0; k<3; k++) {
-                    if (adjacency_table[opp_tri][k] == i) {
-                        edge_table[opp_tri][k] = count;
+                    if( ( t[opp_tri][k] != t[i][a] ) && ( t[opp_tri][k] != t[i][b] ) )
+                    { 
+                        // update it with the label
+                        edge_table[opp_tri][k] = label;
+                        
+                        // add this the the array for later
+                        edge_list[label][3] = v[t[opp_tri][k]];
                     }
-                }
-                count++;
+                }                    
+            } // end if
+        } // end vertices
+    } // end triangles
+
+    printf("vertices: %i\n", vertices);    
+    printf("triangles: %i\n", triangles);
+    printf("edges: %i\n", edges);
+    printf("label: %i\n", label);
+}
+
+
+int s_vertices;
+int s_triangles;
+vec3dd* s_v;                    // vertex table for subdivided surface
+vec3di* s_t;                    // triangle table for subdivided surface
+vec3dd* s_n;                    // normals
+
+
+vec3dd move_point(int vert)
+{    
+    vec3dd p;    
+    vec3dd original = v[vert];
+    
+    int degree = 0;
+    
+    for (int_it it = incidence_table[vert].begin(); it != incidence_table[vert].end(); it++) {
+        for (int i=0; i<3; i++) {
+            if (t[*it][i] != vert) {
+                vec3dd adj = v[t[*it][i]];
+                p += adj;
+                degree += 1;
             }
         }
     }
     
-    printf("\ncount: %i\n", count);
-    printf("triangles: %i\n", triangles);
+    if (degree == 3)
+    {
+        original *= 7.0/16.0;
+        p *= 3.0/16.0;        
+    }
+    else
+    {
+        original *= 5.0/8.0;
+        p *= 3.0/(8.0*(double)degree);
+    }
+    p += original;
+    
+    return p;
 }
 
 
-void init_mesh()
+vec3dd create_point(int edge)
 {
-    find_vertex_degrees();
-    find_incident_triangles();
-    find_adjacent_triangles();
-    label_edges();
+    vec3dd* e = edge_list[edge];  
+    e[0] *= 3.0/8.0;
+    e[1] *= 3.0/8.0;
+    e[2] *= 1.0/8.0;
+    e[3] *= 1.0/8.0;    
+    return e[0]+e[1]+e[2]+e[3];
+}
+
+
+void subdivide()
+{
+    s_vertices = vertices+edges;    
+    s_v = new vec3dd[s_vertices];
+    
+    // move current verticies
+    for (int i=0; i<vertices; i++) {
+        s_v[i] = move_point(i);
+    }
+    
+    // add new edges
+    for (int i=0; i<edges; i++) {
+        s_v[vertices+i] = create_point(i);
+        delete[] edge_list[i];
+    }
+    delete[] edge_list;
+    
+    printf("s_vertices: %i\n", s_vertices);
+}
+
+
+void calc_normal(int i)
+{
+    s_n[i] = (s_v[s_t[i][1]]-s_v[s_t[i][0]])^(s_v[s_t[i][2]]-s_v[s_t[i][0]]);
+}
+
+
+void associate_triangles()
+{
+    s_triangles = triangles*4;
+    s_t = new vec3di[s_triangles];
+    s_n = new vec3dd[s_triangles];
+    
+    int count = 0;
+    
+    for (int i=0; i<triangles; i++) {
+        
+        int middle_tri = count;
+        count++;
+        
+        for (int j=0; j<3; j++) {
+            
+            s_t[middle_tri][j] = vertices + edge_table[i][j];
+            
+            int a = next_point(j);
+            int b = next_point(a);
+            
+            s_t[count][2] = t[i][j];
+            s_t[count][1] = vertices + edge_table[i][a];
+            s_t[count][0] = vertices + edge_table[i][b];    
+            
+            calc_normal(count);
+            calc_normal(middle_tri);
+            
+            count++;
+        }
+    }
+    
+    printf("s_triangles: %i\n", s_triangles);
+    
+}
+
+vec3dd *old_v;   // vertex table
+int old_vertices;
+
+
+void swap_mesh()
+{
+    old_v = v;
+    old_vertices = vertices;
+    delete[] old_v;
+    delete[] t;
+    delete[] n;
+    
+    vertices = s_vertices;
+    triangles = s_triangles;
+    v = s_v;
+    t = s_t;
+    n = s_n;
 }
 
 
 /* --------------------------------------------- */
 
 
+void init_mesh()
+{
+    find_incident_triangles();
+    find_adjacent_triangles();
+    label_edges();
+    subdivide();
+    associate_triangles();
+    swap_mesh();
+    //glutPostRedisplay();
+}
 
 // global variables -- used for communication between callback functions
 
@@ -229,24 +397,55 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_ambient_and_diffuse);
 }
 
-const int TARGET = 0;
 
 /* --------------------------------------------- */
-bool is_adj(int tri)
-{    
-    for (int_it it=adjacency_table[TARGET].begin(); it != adjacency_table[TARGET].end(); it++)
-        if (*it == tri)
-            return true;
-           
-    return false;
+
+
+void render_mesh()
+{
+    set_material_properties(.9,.9,.9);    // white/greyish
+
+    glBegin(GL_TRIANGLES);
+    for (int i=0; i<triangles; i++ )
+    {        
+        glNormal3f(n[i][0],n[i][1],n[i][2]);
+        glVertex3f(v[t[i][0]][0],v[t[i][0]][1],v[t[i][0]][2]);
+        glVertex3f(v[t[i][1]][0],v[t[i][1]][1],v[t[i][1]][2]);
+        glVertex3f(v[t[i][2]][0],v[t[i][2]][1],v[t[i][2]][2]);
+    }
+    glEnd();
+}
+
+
+void render_points()
+{
+    
+    glPointSize(2.0);
+    
+    glBegin(GL_POINTS);
+    
+    set_material_properties(0,0,0);     // black! original vertices
+    for(int i=0; i<old_vertices; i++) {
+        glVertex3f(old_v[i][0], old_v[i][1], old_v[i][2]);        
+    }
+    
+    glBegin(GL_POINTS);
+    set_material_properties(0,0,1);     // black! displaced origial vertices
+    for(int i=0; i<old_vertices; i++) {
+        glVertex3f(v[i][0], v[i][1], v[i][2]);        
+    }
+    
+    
+    set_material_properties(0,1,0);     // green! added verticies
+    for(int i=old_vertices; i<vertices; i++) {
+        glVertex3f(v[i][0], v[i][1], v[i][2]);        
+    }
+    
+    glEnd();
 }
 
 void draw_scene ( )
-{
-    int i;
-    
-    set_material_properties(.9,.9,.9);    // draw white/greyish
-    
+{        
     // normalizing transform
     
     glMatrixMode(GL_MODELVIEW);
@@ -255,27 +454,8 @@ void draw_scene ( )
     glScalef(2/s,2/s,2/s);
     glTranslated(mc[0],mc[1],mc[2]);
     
-    
-    glBegin(GL_TRIANGLES);
-    for ( i=0; i<triangles; i++ )
-    {
-        if (i == TARGET) {
-            set_material_properties(0,0.5,1);   // Blue-green!
-        }
-        else if (is_adj(i)) {
-            set_material_properties(0,0,1);     // Blue!
-        }
-        else {
-            set_material_properties(1,1,1);     // White!
-        }
-            
-        
-        glNormal3f(n[i][0],n[i][1],n[i][2]);
-        glVertex3f(v[t[i][0]][0],v[t[i][0]][1],v[t[i][0]][2]);
-        glVertex3f(v[t[i][1]][0],v[t[i][1]][1],v[t[i][1]][2]);
-        glVertex3f(v[t[i][2]][0],v[t[i][2]][1],v[t[i][2]][2]);
-    }
-    glEnd();
+    //render_points();  
+    render_mesh();
 }
 
 /* --------------------------------------------- */
@@ -584,7 +764,8 @@ GLint main(int argc, char **argv)
     }
     read_mesh(ifs);
     
-    init_mesh();
+    for (int i=0; i < SUB_ITERATIONS; i++)
+        init_mesh();
     
     // this is the event loop entry:
     // take event off the queue, call the handler, repeat

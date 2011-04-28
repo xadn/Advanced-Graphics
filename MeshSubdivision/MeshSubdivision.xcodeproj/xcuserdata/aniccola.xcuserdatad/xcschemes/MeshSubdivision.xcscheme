@@ -48,7 +48,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/pawn.t"
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/tetrahedron.t"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

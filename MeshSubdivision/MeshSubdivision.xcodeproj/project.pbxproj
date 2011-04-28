@@ -208,6 +208,7 @@
 				7E92A8651354D2F2004F7C35 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
