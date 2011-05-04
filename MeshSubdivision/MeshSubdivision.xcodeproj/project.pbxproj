@@ -33,6 +33,7 @@
 		7E92A8701354D34D004F7C35 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		7E92A8741354D393004F7C35 /* mat4x4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mat4x4.h; sourceTree = "<group>"; };
 		7E92A8751354D393004F7C35 /* vec3d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec3d.h; sourceTree = "<group>"; };
+		7EC844D3136B23650048622E /* Stopwatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stopwatch.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +72,7 @@
 		7E92A85D1354D2F2004F7C35 /* MeshSubdivision */ = {
 			isa = PBXGroup;
 			children = (
+				7EC844D3136B23650048622E /* Stopwatch.h */,
 				7E92A8741354D393004F7C35 /* mat4x4.h */,
 				7E92A8751354D393004F7C35 /* vec3d.h */,
 				7E92A85E1354D2F2004F7C35 /* main.cpp */,

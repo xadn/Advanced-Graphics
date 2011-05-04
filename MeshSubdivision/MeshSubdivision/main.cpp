@@ -2,8 +2,8 @@
 //  main.cpp
 //  MeshSubdivision
 //
-//  Modified by Andy Niccolai on 4/12/11.
-//  Copyright 2011 Colorado School of Mines. All rights reserved.
+//  Modified by Andy Niccolai on 5/3/11.
+//  2011 Colorado School of Mines.
 //
 
 
@@ -23,9 +23,9 @@
 #include <fstream>
 #include <vector>
 #include <map>
-#include <algorithm>
 #include "vec3d.h"
 #include "mat4x4.h"
+#include "Stopwatch.h"
 
 using namespace std;
 
@@ -34,7 +34,12 @@ using namespace std;
 
 const char* WINDOW_TITLE = "Mesh Subdivision Project - Andy Niccolai";
 
-const int SUB_ITERATIONS = 4;
+// Change this to true to display the vertices!!!
+bool show_vertices = false;
+//
+
+int iteration_count;
+Stopwatch timer;
 
 // mesh data
 
@@ -56,9 +61,17 @@ vec3dd** edge_list;             // stores the verticies of each edge to create n
 
 // reading a mesh
 
+void calc_normals()
+{
+    n = new vec3dd[triangles];
+    for (int i=0; i<triangles; i++ )
+        n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
+}
 
 void read_mesh ( ifstream &ifs )
 {
+    iteration_count = 0;
+    
     int i;
     ifs >> triangles >> vertices;
     v = new vec3dd[vertices];
@@ -73,9 +86,11 @@ void read_mesh ( ifstream &ifs )
         bbmin &= v[i];
         bbmax |= v[i];
     }
-    n = new vec3dd[triangles];
-    for (int i=0; i<triangles; i++ )
-        n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
+    calc_normals();
+    
+    printf("Input mesh:\n");
+    printf("vertices:  %i\n", vertices);
+    printf("triangles: %i\n\n", triangles);
 }
 
 
@@ -95,30 +110,28 @@ int next_point(int i)
     return (i+1)%3;
 }
 
-//vector<int> adjacent_to(int tri)
 vec3di adjacent_to(int tri)
 {
     vec3di adjacent_triangles;
     
     // find the triangle opposite to each vertex
-    for (int i=0; i<3; i++) {
-        map<int, bool> occurence;        
-        int a = next_point(i);
-        int b = next_point(a);
+    for (int i=0; i<3; i++) {        
+        vector<int> A = incidence_table[t[tri][next_point(i)]];
+        vector<int> B = incidence_table[t[tri][next_point(i+1)]];
+        map<int, bool> occurence;
         
         // Mark the triangles incident to A
-        for (int_it it=incidence_table[t[tri][a]].begin(); it != incidence_table[t[tri][a]].end(); it++) {            
+        for (int_it it=A.begin(); it != A.end(); it++) {            
             occurence[*it] = true;
         }
         
         // Search triangles incident to B for a mark
-        for (int_it it=incidence_table[t[tri][b]].begin(); it != incidence_table[t[tri][b]].end(); it++) {            
+        for (int_it it=B.begin(); it != B.end(); it++) {            
             if ( (occurence[*it]) && (*it != tri) ) {
                 adjacent_triangles[i] = *it;
             }
-        }
-    }
-    
+        }        
+    }    
     return adjacent_triangles;
 }
 
@@ -149,25 +162,20 @@ void label_edges()
     // labels are generated serially
     // should have a range of [0, edges)
     int label = -1;
-    int count = 0;
     
     // loop over each edge (actually the vertex opposite the edge) of each triangle
     for (int i=0; i<triangles; i++) {
         for (int j=0; j<3; j++) {
-            count++;
             if (edge_table[i][j] == -1)
-            {
-                //cout << edge_table[i][j] << endl;
-                
+            {                
                 label++;
                 
-                //cout << label << endl;
                 // label this edge
                 edge_table[i][j] = label;
                 
                 // find the other two vertices on the triangle
                 int a = next_point(j);
-                int b = next_point(a);                
+                int b = next_point(j+1);                
                 
                 // put these vertices in a new array for later
                 edge_list[label] = new vec3dd[4];
@@ -177,7 +185,6 @@ void label_edges()
                 
                 // find the adjacent triangle
                 int opp_tri = adjacency_table[i][j];
-                
 
                 // find the vertex of the opposite triangle which is not on the edge
                 for (int k=0; k<3; k++) {
@@ -189,15 +196,10 @@ void label_edges()
                         // add this the the array for later
                         edge_list[label][3] = v[t[opp_tri][k]];
                     }
-                }                    
+                }
             } // end if
         } // end vertices
-    } // end triangles
-
-    printf("vertices: %i\n", vertices);    
-    printf("triangles: %i\n", triangles);
-    printf("edges: %i\n", edges);
-    printf("label: %i\n", label);
+    } // end triangless
 }
 
 
@@ -209,24 +211,23 @@ vec3di* s_t;        // triangle table for subdivided surface
 vec3dd* s_n;        // normals
 vec3dd* old_v;      // vertex table
 
-
 const double D3_ORIG_WEIGHT     = 7.0/16.0;
-const double D3_NEIGHBOR_WEIGHT = 3.0/16.0;    
+const double D3_NEIGHBOR_WEIGHT = 3.0/16.0;
 const double ORIG_WEIGHT        = 5.0/8.0;
 const double NEIGHBOR_WEIGHT    = 3.0/8.0;
 
+#include <list>
 vec3dd move_point(int vert)
 {    
-    vec3dd p;    
+    vec3dd p(0,0,0);
     vec3dd original = v[vert];
     int degree = 0;
-
+    
     for (int_it it = incidence_table[vert].begin(); it != incidence_table[vert].end(); it++) {
         for (int i=0; i<3; i++) {
             if (t[*it][i] != vert) {
-                vec3dd adj = v[t[*it][i]];
-                p += adj;
-                degree += 1;
+                p += v[t[*it][i]];
+                degree++;
             }
         }
     }
@@ -238,7 +239,7 @@ vec3dd move_point(int vert)
     }
     else {
         original *= ORIG_WEIGHT;
-        p *= NEIGHBOR_WEIGHT/(double)degree; // dividing by degrees accounts for double counting
+        p *= NEIGHBOR_WEIGHT/(double)degree; // dividing by degrees accounts for the double counting
     }
     p += original;
 
@@ -277,14 +278,10 @@ void subdivide()
     }
     delete[] edge_list;
     
-    printf("s_vertices: %i\n", s_vertices);
+    printf("vertices: %i\n", s_vertices);
 }
 
 
-void calc_normal(int i)
-{
-    s_n[i] = (s_v[s_t[i][1]]-s_v[s_t[i][0]])^(s_v[s_t[i][2]]-s_v[s_t[i][0]]);
-}
 
 
 void associate_triangles()
@@ -300,29 +297,18 @@ void associate_triangles()
         int middle_tri = count;
         count++;
         
-        for (int j=0; j<3; j++) {
-            
-            s_t[middle_tri][j] = vertices + edge_table[i][j];
-            
-            int a = next_point(j);
-            int b = next_point(a);
-            
+        for (int j=0; j<3; j++) {            
+            s_t[middle_tri][j] = vertices + edge_table[i][j];            
             s_t[count][2] = t[i][j];
-            s_t[count][1] = vertices + edge_table[i][a];
-            s_t[count][0] = vertices + edge_table[i][b];    
-            
-            calc_normal(count);
-            calc_normal(middle_tri);
-            
+            s_t[count][1] = vertices + edge_table[i][next_point(j)];
+            s_t[count][0] = vertices + edge_table[i][next_point(j+1)];            
             count++;
         }
     }
     
-    printf("s_triangles: %i\n", s_triangles);
+    printf("triangles: %i\n", s_triangles);
     
 }
-
-
 
 
 void swap_mesh()
@@ -339,21 +325,30 @@ void swap_mesh()
     v = s_v;
     t = s_t;
     n = s_n;
+    
+    calc_normals();
 }
 
 
 /* --------------------------------------------- */
 
 
-void init_mesh()
+void do_subdivision()
 {
+    iteration_count++;
+    
+    cout << "Iteration: " << iteration_count << endl;
+    timer.start();
+    
     find_incident_triangles();
     find_adjacent_triangles();
     label_edges();
     subdivide();
     associate_triangles();
+    timer.stop();
+    
+    cout << "time: " << timer.time() << endl << endl;
     swap_mesh();
-    //glutPostRedisplay();
 }
 
 // global variables -- used for communication between callback functions
@@ -367,7 +362,6 @@ int wid;
 // size of the window 
 int width = VPD_DEFAULT;
 int height = VPD_DEFAULT;
-
 
 bool is_left_mouse_button_down = false;
 bool is_middle_mouse_button_down = false;
@@ -399,7 +393,7 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
 /* --------------------------------------------- */
 
 
-void render_mesh()
+void render_triangles()
 {
     set_material_properties(.9,.9,.9);    // white/greyish
 
@@ -415,9 +409,8 @@ void render_mesh()
 }
 
 
-void render_points()
+void render_vertices()
 {
-    
     glPointSize(2.0);
     
     glBegin(GL_POINTS);
@@ -452,8 +445,9 @@ void draw_scene ( )
     glScalef(2/s,2/s,2/s);
     glTranslated(mc[0],mc[1],mc[2]);
     
-    //render_points();  
-    render_mesh();
+    render_triangles();
+    if (show_vertices) 
+        render_vertices();
 }
 
 /* --------------------------------------------- */
@@ -714,10 +708,54 @@ GLvoid reshape(GLint vpw, GLint vph)
     glutPostRedisplay();   // add display event to queue
 }
 
+//glutCreateMenu(void (*)(int)):
+//Creates an empty menu. The argument is the callback function, which is of the form void myfunc(int value), where value holds the index of the menu item which was selected.
+//glutAddMenuEntry(char *name, int value):
+//Adds a menu entry to the bottom of the current menu. The character string name is the text to be displayed in the menu entry, and the integer value is passed to your callback procedure to identify the selected item.
+//glutAttachMenu(int button):
+//Attaches the current menu to the specified mouse button, which is either GLUT_LEFT_BUTTON, GLUT_MIDDLE_BUTTON, or GLUT_RIGHT_BUTTON.
+
+void menu_callback(int button)
+{
+    switch (button) {
+        case 1:
+            do_subdivision();
+            break;
+        case 2:
+            show_vertices = !show_vertices;
+            break;            
+    }
+    glutPostRedisplay();
+}
+
+void create_menu()
+{
+    const char* SUB_LABEL = "Subdivide";
+    const char* VERT_LABEL = "Show vertices";
+    
+    glutCreateMenu(&menu_callback);
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+    glutAddMenuEntry(SUB_LABEL, 1);
+    //glutAddMenuEntry(VERT_LABEL, 2);
+    
+}
+
 /* --------------------------------------------- */
+
+const char* NO_FILE_MESSAGE = "Please specify a file to display.\n";
+const char* USAGE_INSTRUCTIONS = "Right-click options:\n\t1: subdivide the model\n";
+const char* VERTICES_KEY = "Vertices color key:\n\tblack: vertices of previous iteration\n\tgreen: vertices of current iteration\n";
 
 GLint main(int argc, char **argv)
 {  
+    if (argc < 1) {
+        cout << NO_FILE_MESSAGE;
+        exit(0);
+    }
+    
+    cout << USAGE_INSTRUCTIONS << endl;
+    //cout << VERTICES_KEY << endl;
+    
     // need this call to initialize glut/GL -- don't execute any OpenGL code before this call!
     glutInit(&argc,argv);
     
@@ -762,11 +800,7 @@ GLint main(int argc, char **argv)
     }
     read_mesh(ifs);
     
-    for (int i=0; i < SUB_ITERATIONS; i++) {
-        cout << "Iteration: " << i << endl;
-        init_mesh();
-        cout << endl;
-    }
+    create_menu();
     
     // this is the event loop entry:
     // take event off the queue, call the handler, repeat

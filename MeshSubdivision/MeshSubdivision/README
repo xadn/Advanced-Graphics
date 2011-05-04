@@ -1,0 +1,40 @@
+Project 3 - Mesh Subdivision
+By Andy Niccolai for Advanced Graphics
+Spring 2011 at the Colorado School of Mines
+
+
+Usage:
+./main <input_triangle_mesh.t>
+
+Once the program is running use the right-click menu to subdivide the model. The program will output statistics for each iteration to stdout. Rendering the vertices through the right-click menu has been disabled since the clicking the menu button caused an error. If you want to render the vertices change the variable "show_vertices = true" at the top of main.cpp.
+
+
+List of files:
+Makefile		- compile the project automatically
+main.cpp		- contains the subdivision code and the OpenGL loop
+mat4x4.h 		- provided by Andrejz for the OpenGL renderer
+Stopwatch.h 	- code I was given for a Principles of Programming Languages project
+vec3d.h 		- provided by Andrejz for the OpenGL renderer
+
+
+Complexity Analysis:
+
+The complexity is dependant on the algorithm looping over each triangle a fixed number of times. The question marks below represent the number of triangles incident to any vertex in the mesh. In the worst case, this number is equal to the total number of triangles in the mesh and results in a complexity of O(n^2). Luckily, this is unilkely and in most cases the algorithm has a linear, O(n) complexity. 
+
+find_incident_triangles()
+t*3 => O(n)
+
+find_adjacent_triangles()
+t*3*?*? => O(n*?)
+
+label_edges()
+t*3*3 => O(n)
+
+move_points()
+v*?*3 => O(n*?)
+
+create_point()
+e => O(n)
+
+associate_triangles()
+t*3 => O(n)
