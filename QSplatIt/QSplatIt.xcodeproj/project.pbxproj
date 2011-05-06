@@ -1,0 +1,201 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7E9464C613744ECE00DEF9F7 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E9464C513744ECE00DEF9F7 /* main.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7E9464BF13744ECE00DEF9F7 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		7E9464C113744ECE00DEF9F7 /* QSplatIt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = QSplatIt; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E9464C513744ECE00DEF9F7 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		7E9464C713744ECE00DEF9F7 /* QSplatIt.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = QSplatIt.1; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7E9464BE13744ECE00DEF9F7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7E9464B613744ECE00DEF9F7 = {
+			isa = PBXGroup;
+			children = (
+				7E9464C413744ECE00DEF9F7 /* QSplatIt */,
+				7E9464C213744ECE00DEF9F7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7E9464C213744ECE00DEF9F7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7E9464C113744ECE00DEF9F7 /* QSplatIt */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7E9464C413744ECE00DEF9F7 /* QSplatIt */ = {
+			isa = PBXGroup;
+			children = (
+				7E9464C513744ECE00DEF9F7 /* main.cpp */,
+				7E9464C713744ECE00DEF9F7 /* QSplatIt.1 */,
+			);
+			path = QSplatIt;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7E9464C013744ECE00DEF9F7 /* QSplatIt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E9464CA13744ECE00DEF9F7 /* Build configuration list for PBXNativeTarget "QSplatIt" */;
+			buildPhases = (
+				7E9464BD13744ECE00DEF9F7 /* Sources */,
+				7E9464BE13744ECE00DEF9F7 /* Frameworks */,
+				7E9464BF13744ECE00DEF9F7 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = QSplatIt;
+			productName = QSplatIt;
+			productReference = 7E9464C113744ECE00DEF9F7 /* QSplatIt */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7E9464B813744ECE00DEF9F7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				ORGANIZATIONNAME = "Colorado School of Mines";
+			};
+			buildConfigurationList = 7E9464BB13744ECE00DEF9F7 /* Build configuration list for PBXProject "QSplatIt" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7E9464B613744ECE00DEF9F7;
+			productRefGroup = 7E9464C213744ECE00DEF9F7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7E9464C013744ECE00DEF9F7 /* QSplatIt */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7E9464BD13744ECE00DEF9F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E9464C613744ECE00DEF9F7 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7E9464C813744ECE00DEF9F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		7E9464C913744ECE00DEF9F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		7E9464CB13744ECE00DEF9F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7E9464CC13744ECE00DEF9F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7E9464BB13744ECE00DEF9F7 /* Build configuration list for PBXProject "QSplatIt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E9464C813744ECE00DEF9F7 /* Debug */,
+				7E9464C913744ECE00DEF9F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7E9464CA13744ECE00DEF9F7 /* Build configuration list for PBXNativeTarget "QSplatIt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E9464CB13744ECE00DEF9F7 /* Debug */,
+				7E9464CC13744ECE00DEF9F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7E9464B813744ECE00DEF9F7 /* Project object */;
+}

@@ -13,10 +13,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7E92A8591354D2F2004F7C35"
-               BuildableName = "MeshSubdivision"
-               BlueprintName = "MeshSubdivision"
-               ReferencedContainer = "container:MeshSubdivision.xcodeproj">
+               BlueprintIdentifier = "7E48D7651371CCB700ABF217"
+               BuildableName = "QSplat"
+               BlueprintName = "QSplat"
+               ReferencedContainer = "container:qsplat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -40,19 +40,19 @@
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7E92A8591354D2F2004F7C35"
-            BuildableName = "MeshSubdivision"
-            BlueprintName = "MeshSubdivision"
-            ReferencedContainer = "container:MeshSubdivision.xcodeproj">
+            BlueprintIdentifier = "7E48D7651371CCB700ABF217"
+            BuildableName = "QSplat"
+            BlueprintName = "QSplat"
+            ReferencedContainer = "container:qsplat.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/bunny1.t"
-            isEnabled = "YES">
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/f-16.t&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs/bunny1.t"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "3"
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/subbunny5.t&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/subbunny2.t"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
@@ -69,10 +69,10 @@
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7E92A8591354D2F2004F7C35"
-            BuildableName = "MeshSubdivision"
-            BlueprintName = "MeshSubdivision"
-            ReferencedContainer = "container:MeshSubdivision.xcodeproj">
+            BlueprintIdentifier = "7E48D7651371CCB700ABF217"
+            BuildableName = "QSplat"
+            BlueprintName = "QSplat"
+            ReferencedContainer = "container:qsplat.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

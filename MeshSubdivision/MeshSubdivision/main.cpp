@@ -283,7 +283,6 @@ void subdivide()
 
 
 
-
 void associate_triangles()
 {
     s_triangles = triangles*4;
@@ -329,10 +328,6 @@ void swap_mesh()
     calc_normals();
 }
 
-
-/* --------------------------------------------- */
-
-
 void do_subdivision()
 {
     iteration_count++;
@@ -350,6 +345,31 @@ void do_subdivision()
     cout << "time: " << timer.time() << endl << endl;
     swap_mesh();
 }
+
+void printMesh(char* filename)
+{
+    ofstream file;
+    file.open(filename);
+    
+    file << triangles << " " << vertices << endl << endl;
+    
+    for (int i=0; i<triangles; i++)
+    {
+        file << t[i] << endl;
+    }
+    
+    file << endl;
+    
+    for (int i=0; i<vertices; i++)
+    {
+        file << v[i] << endl;
+    }
+    
+}
+
+
+/* --------------------------------------------- */
+
 
 // global variables -- used for communication between callback functions
 
@@ -708,12 +728,6 @@ GLvoid reshape(GLint vpw, GLint vph)
     glutPostRedisplay();   // add display event to queue
 }
 
-//glutCreateMenu(void (*)(int)):
-//Creates an empty menu. The argument is the callback function, which is of the form void myfunc(int value), where value holds the index of the menu item which was selected.
-//glutAddMenuEntry(char *name, int value):
-//Adds a menu entry to the bottom of the current menu. The character string name is the text to be displayed in the menu entry, and the integer value is passed to your callback procedure to identify the selected item.
-//glutAttachMenu(int button):
-//Attaches the current menu to the specified mouse button, which is either GLUT_LEFT_BUTTON, GLUT_MIDDLE_BUTTON, or GLUT_RIGHT_BUTTON.
 
 void menu_callback(int button)
 {
@@ -728,6 +742,7 @@ void menu_callback(int button)
     glutPostRedisplay();
 }
 
+
 void create_menu()
 {
     const char* SUB_LABEL = "Subdivide";
@@ -736,7 +751,7 @@ void create_menu()
     glutCreateMenu(&menu_callback);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
     glutAddMenuEntry(SUB_LABEL, 1);
-    //glutAddMenuEntry(VERT_LABEL, 2);
+    glutAddMenuEntry(VERT_LABEL, 2);
     
 }
 
@@ -754,37 +769,7 @@ GLint main(int argc, char **argv)
     }
     
     cout << USAGE_INSTRUCTIONS << endl;
-    //cout << VERTICES_KEY << endl;
-    
-    // need this call to initialize glut/GL -- don't execute any OpenGL code before this call!
-    glutInit(&argc,argv);
-    
-    // size and placement hints to the window system
-    glutInitWindowSize(width,height);
-    glutInitWindowPosition(10,10);
-    
-    // double buffered, RGB color mode, use depth buffer 
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    
-    // create a GLUT window (not drawn until glutMainLoop() is entered)
-    // wid is the window ID
-    wid = glutCreateWindow(WINDOW_TITLE);    
-    
-    // time to register callbacks 
-    
-    // window size changes 
-    glutReshapeFunc(reshape);
-    
-    // keypress handling when the current window has input focus 
-    glutKeyboardFunc(keyboard);
-    
-    // mouse event handling 
-    glutMouseFunc(mouse_button);           // button press/release
-    glutMotionFunc(button_motion);         // mouse motion w/ button down
-    
-    // function to draw contents of our window -- 
-    //  this is where most of your work will focus!
-    glutDisplayFunc(draw);
+    cout << VERTICES_KEY << endl;
     
     // read the input mesh
     if (argc<2)
@@ -792,6 +777,7 @@ GLint main(int argc, char **argv)
         cout << "Use mesh name as the command line argument" << endl;
         return 0;
     }
+    
     ifstream ifs(argv[1]);
     if (!ifs)
     {
@@ -800,11 +786,54 @@ GLint main(int argc, char **argv)
     }
     read_mesh(ifs);
     
-    create_menu();
     
-    // this is the event loop entry:
-    // take event off the queue, call the handler, repeat
-    glutMainLoop();
+    if (argc == 2) {
+        // need this call to initialize glut/GL -- don't execute any OpenGL code before this call!
+        glutInit(&argc,argv);
+        
+        // size and placement hints to the window system
+        glutInitWindowSize(width,height);
+        glutInitWindowPosition(10,10);
+        
+        // double buffered, RGB color mode, use depth buffer 
+        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+        
+        // create a GLUT window (not drawn until glutMainLoop() is entered)
+        // wid is the window ID
+        wid = glutCreateWindow(WINDOW_TITLE);    
+        
+        // time to register callbacks 
+        
+        // window size changes 
+        glutReshapeFunc(reshape);
+        
+        // keypress handling when the current window has input focus 
+        glutKeyboardFunc(keyboard);
+        
+        // mouse event handling 
+        glutMouseFunc(mouse_button);           // button press/release
+        glutMotionFunc(button_motion);         // mouse motion w/ button down
+        
+        // function to draw contents of our window -- 
+        //  this is where most of your work will focus!
+        glutDisplayFunc(draw);
+        
+        create_menu();
+        // this is the event loop entry:
+        // take event off the queue, call the handler, repeat
+        glutMainLoop();
+    }
+    else if (argc == 4) {
+        char* output_file(argv[2]);
+        int iterations = atoi(argv[3]);
+        
+        for (int i=0; i<iterations; i++) 
+        {
+            do_subdivision();
+        }
+        
+        printMesh(output_file);
+    }
     
     return 0;
 }
