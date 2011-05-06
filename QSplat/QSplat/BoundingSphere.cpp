@@ -27,6 +27,7 @@ BoundingSphere::BoundingSphere(vert_ls verts)
         case 1:
             leaf = true;
             center = *verts.front();
+            norm = verts.front()->normal;
             break;
             
         default:
@@ -53,19 +54,6 @@ vec3dd BoundingSphere::findCenter(vert_ls verts)
 }
 
 
-vert_ls* BoundingSphere::partitionMesh2(vert_ls verts)
-{
-    vert_ls* partitions = new vert_ls[2]; 
-    
-    partitions[0].push_back(verts.front());
-    verts.pop_front();
-    
-    partitions[1] = verts;
-    
-    return partitions;
-}
-
-
 // Partition the mesh into equal parts
 vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
 {
@@ -87,7 +75,7 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
     
     // Find the longest axis (x, y, z) to sort by
     double max_axis;
-    distance = max - min;    
+    distance = max - min;
     
     // Find the longest axis 
     for(int i=0; i<3; i++)
@@ -125,7 +113,7 @@ list<vec3dd> BoundingSphere::recurseToDepth(int depth)
 {
     list<vec3dd> vertices;
     
-    if (leaf || depth == 0) {
+    if (leaf || depth <= 0) {
         vertices.push_back(center);
     }
     else {

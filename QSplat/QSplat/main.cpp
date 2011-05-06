@@ -23,6 +23,7 @@
 #include <iostream>
 #include <fstream>
 #include <list>
+#include <map>
 #include "vec3d.h"
 #include "mat4x4.h"
 #include "Stopwatch.h"
@@ -42,7 +43,7 @@ unsigned int recursion_depth = 1;
 // mesh data
 
 int triangles,vertices;
-vec3dd *v;   // vertex table
+Point *v;   // vertex table
 vec3di *t;   // triangle table
 vec3dd *n;   // triangle normals
 vec3dd bbmin,bbmax;  // corners of the bounding box
@@ -54,7 +55,7 @@ void read_mesh ( ifstream &ifs )
 {
     int i;
     ifs >> triangles >> vertices;
-    v = new vec3dd[vertices];
+    v = new Point[vertices];
     t = new vec3di[triangles];
     for ( i=0; i<triangles; i++ )
         ifs >> t[i][0] >> t[i][1] >> t[i][2];
@@ -71,10 +72,80 @@ void read_mesh ( ifstream &ifs )
         n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
 }
 
+vector<list<int> > incidence_table(vertices);
+
+void calc_vertex_normals()
+{
+    vector<list<int> > incidence_table(vertices);
+    double area[triangles];
+    
+    // Build the table of triangles incident to each vertex
+    for (int i=0; i<triangles; i++) {
+        for (int j=0; j<3; j++) {
+            incidence_table[t[i][j]].push_back(i);
+        }
+        vec3dd cross = v[t[i][0]]^v[t[i][1]];
+        area[i] = 0.5*sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+    }
+    
+    // Calculate the normal for each vertex from its incident triangles
+    for (int i=0; i<vertices; i++)
+    {
+        v[i].normal = vec3dd(0,0,0);
+        for (list<int>::iterator it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
+        {
+            v[i].normal += area[*it] * n[*it];            
+        }
+        v[i].normal.normalize();
+    }
+}
+
+
+void calc_vertex_size()
+{
+    
+}
+
+// NOPE THIS ISN'T IT
+// WE ACTUALLY NEED TO GET THE LIST OF ALL VERTICES ADJ TO EACH VERTEX
+// 3 triangles adjacent to each triangle
+// [triangle][opp_edge] = triangle 
+//int next_point(int i)
+//{
+//    return (i+1)%3;
+//}
+//void find_adjacent_triangles()
+//{
+//    vector<vec3di> adjacency_table(triangles);
+//    
+//    // Find the triangles touching each triangle
+//    for (int i=0; i<triangles; i++) {
+//        for (int j=0; j<3; j++) {        
+//            list<int> A = incidence_table[t[i][next_point(j)]];
+//            list<int> B = incidence_table[t[i][next_point(j+1)]];
+//            map<int, bool> occurence;
+//            
+//            // Mark the triangles incident to A
+//            for (list<int>::iterator it=A.begin(); it != A.end(); it++) {            
+//                occurence[*it] = true;
+//            }
+//            
+//            // Search triangles incident to B for a mark
+//            for (list<int>::iterator it=B.begin(); it != B.end(); it++) {            
+//                if ( (occurence[*it]) && (*it != i) ) {
+//                    adjacency_table[i][j] = *it;
+//                }
+//            }        
+//        }    
+//    }   
+//}
+
 
 void build_sphere_tree()
 {
-    list<vec3dd*> verts;
+    calc_vertex_normals();
+    
+    list<Point*> verts;
     
     for (int i=0; i<vertices; i++)
     {
@@ -433,16 +504,15 @@ GLvoid keyboard(GLubyte key, GLint x, GLint y)
             exit(0);
             break;
             
-        case 'z':
+        case 'x':
             recursion_depth++;
             glutPostRedisplay();
             break;
             
-        case 'x':
+        case 'z':
             recursion_depth--;
             glutPostRedisplay();
             break;
-            
             
         default:  
             break;

@@ -12,24 +12,32 @@
 using namespace std;
 
 
-typedef list<vec3dd*> vert_ls;
+class Point : public vec3dd
+{
+public:
+    double size;
+    vec3dd normal;
+};
+
+typedef list<Point*> vert_ls;
 typedef vert_ls::iterator vert_it;
 
 
 class BoundingSphere
 {    
 public:
-    BoundingSphere(vert_ls verts);    
+    BoundingSphere(vert_ls verts);
     list<vec3dd> recurseToDepth(int depth);
+    vec3dd normal() { return norm; }
     
 private:
     vec3dd findCenter(vert_ls verts);
     vert_ls* partitionMesh(vert_ls verts);
-    vert_ls* partitionMesh2(vert_ls verts);
     
     bool leaf;
     double size;
     vec3dd center;
+    vec3dd norm;
     
     BoundingSphere* leftSubTree;
     BoundingSphere* rightSubTree;

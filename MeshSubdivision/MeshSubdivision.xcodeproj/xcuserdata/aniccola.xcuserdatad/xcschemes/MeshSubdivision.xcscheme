@@ -48,12 +48,12 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/bunny1.t"
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/foot1.t"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "3"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>

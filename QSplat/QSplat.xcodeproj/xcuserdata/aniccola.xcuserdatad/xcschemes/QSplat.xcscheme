@@ -16,7 +16,7 @@
                BlueprintIdentifier = "7E48D7651371CCB700ABF217"
                BuildableName = "QSplat"
                BlueprintName = "QSplat"
-               ReferencedContainer = "container:qsplat.xcodeproj">
+               ReferencedContainer = "container:QSplat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -43,16 +43,16 @@
             BlueprintIdentifier = "7E48D7651371CCB700ABF217"
             BuildableName = "QSplat"
             BlueprintName = "QSplat"
-            ReferencedContainer = "container:qsplat.xcodeproj">
+            ReferencedContainer = "container:QSplat.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/f-16.t&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs/bunny1.t"
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/foot1.t&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs/bunny1.t"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/subbunny5.t&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/subbunny2.t"
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/subbunny3.t&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/subbunny2.t"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
@@ -72,7 +72,7 @@
             BlueprintIdentifier = "7E48D7651371CCB700ABF217"
             BuildableName = "QSplat"
             BlueprintName = "QSplat"
-            ReferencedContainer = "container:qsplat.xcodeproj">
+            ReferencedContainer = "container:QSplat.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
