@@ -32,9 +32,11 @@
 using namespace std;
 
 
+const bool DRAW_SMOOTH = true;
+const bool DRAW_TEST = false;
 const bool DRAW_MESH = false;
 const bool DRAW_ORIGINAL_VERTICES = false;
-const bool DRAW_QSPLAT_VERTICES = true;
+const bool DRAW_QSPLAT_VERTICES = false;
 unsigned int recursion_depth = 1;
 
 
@@ -104,13 +106,13 @@ void calc_vertex_normals_and_size()
         {
             v[i].normal += area[*it] * n[*it];
         }
+        //v[i].normal = n[incidence_table[i].front()];
         v[i].normal.normalize();
     }
     
     // Calculate the size of each leaf splat from its incident vertices
     for (int i=0; i<vertices; i++)
     {
-        v[i].normal = vec3dd(0,0,0);
         for (it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
         {
             // Iterate over each vertex in the triangle
@@ -192,6 +194,13 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
 
 /* --------------------------------------------- */
 
+
+void draw_test()
+{
+}
+
+/* --------------------------------------------- */
+
 void draw_mesh()
 {
     set_material_properties(.9,.9,.9);
@@ -204,16 +213,34 @@ void draw_mesh()
         glVertex3f(v[t[i][1]][0],v[t[i][1]][1],v[t[i][1]][2]);
         glVertex3f(v[t[i][2]][0],v[t[i][2]][1],v[t[i][2]][2]);
     }
-    glEnd();    
+    glEnd();
+}
+
+void draw_mesh_smooth()
+{
+    set_material_properties(.9,.9,.9);
+    
+    glBegin(GL_TRIANGLES);
+    for (int i=0; i<triangles; i++ )
+    {
+        for (int j=0; j<3; j++)
+        {            
+            glNormal3f(v[t[i][j]].normal[0], v[t[i][j]].normal[1], v[t[i][j]].normal[2]);
+            glVertex3f(v[t[i][j]][0],v[t[i][j]][1],v[t[i][j]][2]);            
+        }
+    }
+
+    glEnd();
 }
 
 void draw_original_vertices()
 {
-    set_material_properties(0,1,0);
+    set_material_properties(.9,.9,.9);
     
     glBegin(GL_POINTS);
     for (int i=0; i<vertices; i++)
     {
+        glNormal3f(v[i].normal[0], v[i].normal[1], v[i].normal[2]);
         glVertex3f(v[i][0], v[i][1], v[i][2]);
     }
     glEnd();
@@ -247,7 +274,7 @@ void draw_scene()
     glScalef(2/s,2/s,2/s);
     glTranslated(mc[0],mc[1],mc[2]);
     
-    glPointSize(2.0);
+    glPointSize(4.0);
     
     if (DRAW_MESH)
         draw_mesh();
@@ -255,6 +282,10 @@ void draw_scene()
         draw_original_vertices();
     if (DRAW_QSPLAT_VERTICES)
         draw_qsplat_vertices();
+    if (DRAW_TEST)
+        draw_mesh();
+    if (DRAW_SMOOTH)
+        draw_mesh_smooth();
 }
 
 /* --------------------------------------------- */

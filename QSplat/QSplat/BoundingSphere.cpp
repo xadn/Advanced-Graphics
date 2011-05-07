@@ -55,6 +55,10 @@ vec3dd BoundingSphere::findCenter(vert_ls verts)
     return (1.0/(double)verts.size())*average;
 }
 
+void BoundingSphere::splat_vertices()
+{
+    
+}
 
 // Partition the mesh into equal parts
 vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
