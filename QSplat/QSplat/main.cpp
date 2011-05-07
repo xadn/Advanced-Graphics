@@ -72,78 +72,66 @@ void read_mesh ( ifstream &ifs )
         n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
 }
 
-vector<list<int> > incidence_table(vertices);
 
-void calc_vertex_normals()
+double length(vec3dd vert)
+{
+    return sqrt(vert[0]*vert[0]+vert[1]*vert[1]+vert[2]*vert[2]);
+}
+
+
+void calc_vertex_normals_and_size()
 {
     vector<list<int> > incidence_table(vertices);
     double area[triangles];
+    list<int>::iterator it;
     
     // Build the table of triangles incident to each vertex
+    // Calculate the area of each triangle at the same time
+    // Area is 1/2(AB x AC)
     for (int i=0; i<triangles; i++) {
         for (int j=0; j<3; j++) {
             incidence_table[t[i][j]].push_back(i);
         }
-        vec3dd cross = v[t[i][0]]^v[t[i][1]];
-        area[i] = 0.5*sqrt(cross[0]*cross[0]+cross[1]*cross[1]+cross[2]*cross[2]);
+        area[i] = 0.5*length(v[t[i][0]]^v[t[i][1]]);
     }
     
     // Calculate the normal for each vertex from its incident triangles
+    // The normal is the area weighted sum of the normals of the incident triangles
     for (int i=0; i<vertices; i++)
     {
         v[i].normal = vec3dd(0,0,0);
-        for (list<int>::iterator it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
+        for (it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
         {
-            v[i].normal += area[*it] * n[*it];            
+            v[i].normal += area[*it] * n[*it];
         }
         v[i].normal.normalize();
     }
-}
-
-
-void calc_vertex_size()
-{
     
+    // Calculate the size of each leaf splat from its incident vertices
+    for (int i=0; i<vertices; i++)
+    {
+        v[i].normal = vec3dd(0,0,0);
+        for (it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
+        {
+            // Iterate over each vertex in the triangle
+            // Calculate the distance from it to the vertex in question
+            // 1/2 the max distance is the size of the vertex
+            double max = 0;
+            for (int j=0; j<3; j++)
+            {
+                double len = length( v[t[*it][j]] - v[i] );
+                if (len > max)
+                    max = len;
+            }
+            v[i].size = 0.5*max;            
+        }
+    }
 }
-
-// NOPE THIS ISN'T IT
-// WE ACTUALLY NEED TO GET THE LIST OF ALL VERTICES ADJ TO EACH VERTEX
-// 3 triangles adjacent to each triangle
-// [triangle][opp_edge] = triangle 
-//int next_point(int i)
-//{
-//    return (i+1)%3;
-//}
-//void find_adjacent_triangles()
-//{
-//    vector<vec3di> adjacency_table(triangles);
-//    
-//    // Find the triangles touching each triangle
-//    for (int i=0; i<triangles; i++) {
-//        for (int j=0; j<3; j++) {        
-//            list<int> A = incidence_table[t[i][next_point(j)]];
-//            list<int> B = incidence_table[t[i][next_point(j+1)]];
-//            map<int, bool> occurence;
-//            
-//            // Mark the triangles incident to A
-//            for (list<int>::iterator it=A.begin(); it != A.end(); it++) {            
-//                occurence[*it] = true;
-//            }
-//            
-//            // Search triangles incident to B for a mark
-//            for (list<int>::iterator it=B.begin(); it != B.end(); it++) {            
-//                if ( (occurence[*it]) && (*it != i) ) {
-//                    adjacency_table[i][j] = *it;
-//                }
-//            }        
-//        }    
-//    }   
-//}
 
 
 void build_sphere_tree()
 {
-    calc_vertex_normals();
+    calc_vertex_normals_and_size();
     
     list<Point*> verts;
     
@@ -231,11 +219,14 @@ void draw_original_vertices()
     glEnd();
 }
 
+list<vec3dd> points_to_render;
+
 void draw_qsplat_vertices()
 {
     set_material_properties(0,0,1);
     
-    list<vec3dd> points_to_render = sphere_tree->recurseToDepth(recursion_depth);
+    if ( points_to_render.empty() )
+        points_to_render = sphere_tree->recurseToDepth(recursion_depth);
     
     glBegin(GL_POINTS);
     for (list<vec3dd>::iterator it = points_to_render.begin(); it != points_to_render.end(); it++)
@@ -506,17 +497,17 @@ GLvoid keyboard(GLubyte key, GLint x, GLint y)
             
         case 'x':
             recursion_depth++;
-            glutPostRedisplay();
             break;
             
         case 'z':
-            recursion_depth--;
-            glutPostRedisplay();
+            recursion_depth--;            
             break;
             
         default:  
             break;
     }
+    points_to_render = sphere_tree->recurseToDepth(recursion_depth);
+    glutPostRedisplay();
 }
 
 /* --------------------------------------------- */

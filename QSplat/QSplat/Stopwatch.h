@@ -23,7 +23,7 @@ public:
 
   // Stops this stopwatch, if running.
   void stop() {
-    if (running_) {
+    if (running_) { 
       time_ = timeSinceStart();
       running_ = false;
     }

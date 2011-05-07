@@ -10,6 +10,7 @@
 #include "BoundingSphere.h"
 
 
+
 BoundingSphere::BoundingSphere(vert_ls verts)
 {    
     static int count;
@@ -27,7 +28,8 @@ BoundingSphere::BoundingSphere(vert_ls verts)
         case 1:
             leaf = true;
             center = *verts.front();
-            norm = verts.front()->normal;
+            size = verts.front()->size;
+            norm = verts.front()->normal;            
             break;
             
         default:
@@ -91,6 +93,9 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
     // Find the midpoint of the bounding box
     mid = 0.5*(max+min);
     
+    // Use the bounding box to set the size of the bounding sphere
+    size = length(max - mid);
+    
     // Sort the vertices along the axis
     while ( !verts.empty() )
     {        
@@ -123,4 +128,10 @@ list<vec3dd> BoundingSphere::recurseToDepth(int depth)
         vertices.splice(vertices.end(), rst);
     }
     return vertices;
+}
+
+
+double BoundingSphere::length(vec3dd vert)
+{
+    return sqrt(vert[0]*vert[0]+vert[1]*vert[1]+vert[2]*vert[2]);
 }

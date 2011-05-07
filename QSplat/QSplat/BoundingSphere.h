@@ -33,11 +33,14 @@ public:
 private:
     vec3dd findCenter(vert_ls verts);
     vert_ls* partitionMesh(vert_ls verts);
+    double length(vec3dd vert);
+    void splat_vertices();
     
     bool leaf;
     double size;
     vec3dd center;
     vec3dd norm;
+    vec3dd splat[4];
     
     BoundingSphere* leftSubTree;
     BoundingSphere* rightSubTree;
