@@ -40,7 +40,7 @@ const bool DRAW_MESH = false;
 const bool DRAW_ORIGINAL_VERTICES = false;
 const bool DRAW_QSPLAT_VERTICES = true;
 
-const double SCALE_FACTOR = 1000;
+const double SCALE_FACTOR = 75;
 
 /* --------------------------------------------- */
 

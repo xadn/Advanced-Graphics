@@ -8,7 +8,6 @@
 
 #include <math.h>
 #include "BoundingSphere.h"
-//#include <boost/thread.hpp>
 
 
 
