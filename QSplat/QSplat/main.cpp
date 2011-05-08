@@ -35,10 +35,11 @@ using namespace std;
 unsigned int recursion_depth = 12; // 12
 unsigned int DEPTH_INCREMENT = 2;
 
+const bool DRAW_QSPLAT = false;
+const bool DRAW_LEAVES = true;
 const bool DRAW_SMOOTH = false;
 const bool DRAW_MESH = false;
-const bool DRAW_ORIGINAL_VERTICES = false;
-const bool DRAW_QSPLAT_VERTICES = true;
+
 
 const double SCALE_FACTOR = 75;
 
@@ -48,13 +49,13 @@ double scale_factor;
 
 // mesh data
 
-int triangles,vertices;
-Point *v;   // vertex table
-vec3di *t;   // triangle table
-vec3dd *n;   // triangle normals
+unsigned int triangles,vertices;
+vector<Point> v;   // vertex table
+vector<vec3di> t;
+vector<vec3dd> n;   // triangle normals
 vec3dd bbmin,bbmax;  // corners of the bounding box
 BoundingSphere* sphere_tree;
-vert_ls points_to_render;
+
 
 // reading a mesh
 
@@ -67,15 +68,15 @@ void read_mesh ( ifstream &ifs )
 {
     printf("reading mesh from file...\n");
     
-    int i;
     ifs >> triangles >> vertices;
-    v = new Point[vertices];
-    t = new vec3di[triangles];
-    for ( i=0; i<triangles; i++ )
+    v.resize(vertices);
+    t.resize(triangles);
+    
+    for (long i=0; i<triangles; i++ )
         ifs >> t[i][0] >> t[i][1] >> t[i][2];
     ifs >> v[0][0] >> v[0][1] >> v[0][2];
     bbmin = bbmax = v[0];
-    for ( i=1; i<vertices; i++ )
+    for (long i=1; i<vertices; i++ )
     {
         ifs >> v[i][0] >> v[i][1] >> v[i][2];
         bbmin &= v[i];
@@ -84,24 +85,25 @@ void read_mesh ( ifstream &ifs )
     
     printf("calculating triangle normals...\n");
     
-    n = new vec3dd[triangles];
-    for ( i=0; i<triangles; i++ )
+    n.resize(triangles);
+    for (long i=0; i<triangles; i++ )
         n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
 }
 
 
 void calc_vertex_normals_and_size()
 {
-    vector<list<int> > incidence_table(vertices);
-    double area[triangles];
-    list<int>::iterator it;
+    vector<list<long> > incidence_table(vertices);    
+    vector<double> area(triangles);
     
     // Build the table of triangles incident to each vertex
     // Calculate the area of each triangle at the same time
     // Area is 1/2(AB x AC)
     printf("building incidence table...\n");
-    for (int i=0; i<triangles; i++) {
+    
+    for (long i=0; i<triangles; i++) {
         for (int j=0; j<3; j++) {
+            t[i][j];
             incidence_table[t[i][j]].push_back(i);
         }
         area[i] = 0.5*length(v[t[i][0]]^v[t[i][1]]);
@@ -110,10 +112,11 @@ void calc_vertex_normals_and_size()
     // Calculate the normal for each vertex from its incident triangles
     // The normal is the area weighted sum of the normals of the incident triangles
     printf("calculating vertex normals...\n");
-    for (int i=0; i<vertices; i++)
+    
+    for (long i=0; i<vertices; i++)
     {
         v[i].normal = vec3dd(0,0,0);
-        for (it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
+        for (list<long>::iterator it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
         {
             v[i].normal += area[*it] * n[*it];
         }
@@ -123,9 +126,10 @@ void calc_vertex_normals_and_size()
     
     // Calculate the size of each leaf splat from its incident vertices
     printf("calculating size of leaf nodes...\n");
-    for (int i=0; i<vertices; i++)
+    
+    for (long i=0; i<vertices; i++)
     {
-        for (it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
+        for (list<long>::iterator it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
         {
             // Iterate over each vertex in the triangle
             // Calculate the distance from it to the vertex in question
@@ -142,18 +146,7 @@ void calc_vertex_normals_and_size()
     }
 }
 
-void walk_tree()
-{
-    static Stopwatch timer;
-    timer.start();
-    
-    points_to_render = sphere_tree->recurseToDepth(recursion_depth);
-    
-    timer.stop();
-    printf("Recursed to depth %u in %f seconds\n", recursion_depth, timer.time());
-    printf("Displaying %lu splats\n", points_to_render.size() );
-    timer.reset();
-}
+
 
 
 void build_sphere_tree()
@@ -215,9 +208,121 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
 
 /* --------------------------------------------- */
 
+vector<Point> fastSplats;
+double maxSplatSize;
+
+typedef vector<Point>::iterator point_it;
+
+vector<point_it> splatParts;
+vector<double> splatSizes;
+
+bool testSize(Point* a, Point* b)
+{
+    if (a->size > b->size)
+        return true;
+    return false;
+}
+
+void partitionSizes(point_it start, point_it end, int depth)
+{
+    if (start != end)
+    {
+        depth--;
+        double mid = (start->size + (end-1)->size) / 2.0;
+        
+        if (depth == 0)
+        {
+            splatParts.push_back(start);
+            splatSizes.push_back(mid * scale_factor);
+        }
+        else
+        {
+            point_it midpoint = start;           
+            while (midpoint->size > mid) midpoint++;
+            partitionSizes(start, midpoint, depth);
+            partitionSizes(midpoint, end, depth);
+        }
+    }        
+}
+
+void walk_tree()
+{
+    static Stopwatch timer;
+    timer.start();
+    
+    scale_factor = sqrt(2.0*pow(((double)width/(bbmax-bbmin).max()), 2.0));
+    
+    vert_ls splats = sphere_tree->recurseToDepth(recursion_depth);
+    
+    splats.sort(testSize);
+    
+    maxSplatSize = scale_factor * (splats.front()->size - splats.back()-> size)/2.0;
+    
+    fastSplats.clear();    
+    fastSplats.reserve(splats.size());
+    
+    for (vert_it it = splats.begin(); it != splats.end(); it++)
+    {
+        fastSplats.push_back(**it);
+    }
+
+    splatParts.clear();
+    splatSizes.clear();
+    
+    partitionSizes(fastSplats.begin(), fastSplats.end(), 5);
+    
+    splatParts.push_back(fastSplats.end());
+    
+    cout << splatSizes.size() << endl;
+    
+    timer.stop();
+    printf("Recursed to depth %u in %f seconds\n", recursion_depth, timer.time());
+    printf("Displaying %lu splats, with %lu sizes\n", splats.size(), splatSizes.size() );
+    timer.reset();
+}
 
 
 /* --------------------------------------------- */
+
+
+void blah()
+{
+//    double zproj[4];
+//    double M[16];
+//    double P[16];
+//    
+//    glGetDoublev(GL_MODELVIEW_MATRIX, M);
+//    glGetDoublev(GL_PROJECTION_MATRIX, P);
+//    
+//    zproj[0] = -M[2];
+//	zproj[1] = -M[6];
+//	zproj[2] = -M[10];
+//	zproj[3] = -M[14];
+//    
+//    double pixels_per_radian = 0.5 * width * P[0];
+//    double z = zproj[0] * (**it)[0] + zproj[1] * (**it)[1] + zproj[2] * (**it)[2] + zproj[3];
+    // for loop
+//    cout << z << endl;
+    //        double splatsize_scale = 2.3 * pixels_per_radian / z;
+    //        
+    //		double splatsize = (**it).size * splatsize_scale;
+    //        glPointSize(splatsize);
+    //end for
+    
+    //    double* M;
+    //    double* P;
+    //    int* V;
+    //    
+    //    glGetDoublev(GL_MODELVIEW_MATRIX, M);
+    //    glGetDoublev(GL_PROJECTION_MATRIX, P);
+    //    glGetIntegerv(GL_VIEWPORT, V);
+    
+    //double sc[3];
+    
+    
+    //gluProject((**it)[0], (**it)[1], (**it)[2], M, P, V, &sc[0], &sc[1], &sc[2]);
+    //vec3dd temp = (**it)+(**it).size;
+}
 
 void draw_mesh()
 {
@@ -248,79 +353,44 @@ void draw_mesh_smooth()
             glVertex3f(v[t[i][j]][0],v[t[i][j]][1],v[t[i][j]][2]);            
         }
     }
-
+    
     glEnd();
 }
 
 
-void draw_original_vertices()
+void draw_splats()
 {
-    set_material_properties(.9,.9,.9);    
+    set_material_properties(.9,.9,.9);
     
-    for (int i=0; i<vertices; i++)
+    for (int i=0; i < splatParts.size()-1; i++)
     {
-        glPointSize(v[i].size*SCALE_FACTOR);
+        glPointSize(splatSizes[i]);
         glBegin(GL_POINTS);
-        glNormal3f(v[i].normal[0], v[i].normal[1], v[i].normal[2]);
-        glVertex3f(v[i][0], v[i][1], v[i][2]);
+        for (point_it it=splatParts[i]; it != splatParts[i+1]; it++)
+        {            
+            glNormal3f(it->normal[0], it->normal[1], it->normal[2]);
+            glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+        }
         glEnd();
     }
-    
 }
 
-void blah()
+void draw_splats_colors()
 {
-//    double zproj[4];
-//    double M[16];
-//    double P[16];
-//    
-//    glGetDoublev(GL_MODELVIEW_MATRIX, M);
-//    glGetDoublev(GL_PROJECTION_MATRIX, P);
-//    
-//    zproj[0] = -M[2];
-//	zproj[1] = -M[6];
-//	zproj[2] = -M[10];
-//	zproj[3] = -M[14];
-//    
-//    double pixels_per_radian = 0.5 * width * P[0];
-//    double z = zproj[0] * (**it)[0] + zproj[1] * (**it)[1] + zproj[2] * (**it)[2] + zproj[3];
-    // for loop
-//    cout << z << endl;
-    //        double splatsize_scale = 2.3 * pixels_per_radian / z;
-    //        
-    //		double splatsize = (**it).size * splatsize_scale;
-    //        glPointSize(splatsize);
-    //end for
-}
-
-void draw_qsplat_vertices()
-{    
-//    double* M;
-//    double* P;
-//    int* V;
-//    
-//    glGetDoublev(GL_MODELVIEW_MATRIX, M);
-//    glGetDoublev(GL_PROJECTION_MATRIX, P);
-//    glGetIntegerv(GL_VIEWPORT, V);
+    set_material_properties(.9,.9,.9);
     
-    for (vert_it it = points_to_render.begin(); it != points_to_render.end(); it++)
+    for (int i=0; i < splatParts.size()-1; i++)
     {
-        //double sc[3];
-        
-        //gluProject((**it)[0], (**it)[1], (**it)[2], M, P, V, &sc[0], &sc[1], &sc[2]);
-        //vec3dd temp = (**it)+(**it).size;
-        
-        if ((**it).leaf)
-            set_material_properties(0,1,0);
-        else
-            set_material_properties(.9,.9,.9);
-        
-        glPointSize((**it).size*scale_factor);
+        glPointSize(splatSizes[i]);
         glBegin(GL_POINTS);
-        glNormal3f((**it).normal[0], (**it).normal[1], (**it).normal[2]);
-        glVertex3f((**it)[0], (**it)[1], (**it)[2]);
+        for (point_it it=splatParts[i]; it != splatParts[i+1]; it++)
+        {
+            set_material_properties(it->color[0], it->color[1], it->color[2]);
+            glNormal3f(it->normal[0], it->normal[1], it->normal[2]);
+            glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+        }
         glEnd();
-    }   
+    }
 }
 
 
@@ -337,14 +407,14 @@ void draw_scene()
     glScalef(2/s,2/s,2/s);
     glTranslated(mc[0],mc[1],mc[2]);
     
-    if (DRAW_MESH)
-        draw_mesh();
-    if (DRAW_ORIGINAL_VERTICES)
-        draw_original_vertices();
-    if (DRAW_QSPLAT_VERTICES)
-        draw_qsplat_vertices();
-    if (DRAW_SMOOTH)
+    if (DRAW_QSPLAT)
+        draw_splats();
+    else if (DRAW_LEAVES)
+        draw_splats_colors();
+    else if (DRAW_SMOOTH)
         draw_mesh_smooth();
+    else if (DRAW_MESH)
+        draw_mesh();
 }
 
 /* --------------------------------------------- */

@@ -12,7 +12,10 @@
 
 
 BoundingSphere::BoundingSphere(vert_ls verts)
-{    
+{
+    static int count;
+    count++;
+    
     vert_ls* partitions;
     
     switch (verts.size()) {
@@ -23,30 +26,26 @@ BoundingSphere::BoundingSphere(vert_ls verts)
             
         case 1:
             center = *verts.front();
+            center.color = vec3df(0.0, 1.0, 0.0);
             center.leaf = true;
             break;
             
         default:
             partitions = partitionMesh(verts);
             
-            //cout << partitions[0].size() << endl;
-            //cout << partitions[1].size() << endl;
+            //printf("node: %i, left: %lu, right %lu\n", count, partitions[0].size(), partitions[1].size() );
             
-            if (!partitions[0].empty())
-                leftSubTree = new BoundingSphere(partitions[0]);
-            if (!partitions[1].empty())
-                rightSubTree = new BoundingSphere(partitions[1]);
+            if (partitions[0].empty() || partitions[1].empty() )
+            {
+                printf("error: A partition of node %i was empty!\n", count);
+                exit(EXIT_SUCCESS);
+            }
             
-            if (leftSubTree && rightSubTree)
-                center.normal = (leftSubTree->center.normal + rightSubTree->center.normal).normalize();
-            else if (leftSubTree)
-                center.normal = leftSubTree->center.normal;
-            else if(rightSubTree)
-                center.normal = rightSubTree->center.normal;
-            else
-                center.normal = vec3dd(0,0,0);
-                
-                
+            leftSubTree = new BoundingSphere(partitions[0]);
+            rightSubTree = new BoundingSphere(partitions[1]);
+            
+            center.normal = (leftSubTree->center.normal + rightSubTree->center.normal).normalize();
+            center.color = vec3df(0.9, 0.9, 0.9);
             center.leaf = false;
             break;
     }
@@ -56,18 +55,6 @@ BoundingSphere::BoundingSphere(vert_ls verts)
 // Partition the mesh into equal parts
 vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
 {
-    static int count;
-    count++;
-    
-    if (count == 1) 
-    {
-        printf("Node %i\n", count);
-        for(vert_it it = verts.begin(); it != verts.end(); it++)
-        {
-            cout << **it << endl;
-        }
-    }
-
     vec3dd max(0,0,0);
     vec3dd min(0,0,0);
     vec3dd mid(0,0,0);
@@ -82,14 +69,8 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
     {
         max |= **it;
         min &= **it;
-        
-            //cout << **it << endl;
     }
-    
-//    cout << verts.size() << endl;
-//    cout << "max: " << max << endl;
-//    cout << "min: " << min << endl;
-    
+
     // Find the longest axis (x, y, z) to sort by
     double max_axis;
     distance = max - min;
@@ -111,8 +92,7 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
     
     center[0] = mid[0];
     center[1] = mid[1];
-    center[2] = mid[2];
-    
+    center[2] = mid[2];    
     
     // Sort the vertices along the axis
     while ( !verts.empty() )
@@ -126,9 +106,6 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
 
         verts.pop_front();
     }
-    
-    
-    printf("node: %i, left: %lu, right %lu\n", count, partitions[0].size(), partitions[1].size() );
     
     return partitions;
 }

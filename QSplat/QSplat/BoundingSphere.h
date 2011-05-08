@@ -17,6 +17,7 @@ class Point : public vec3dd
 public:
     double size;
     vec3dd normal;
+    vec3df color;
     bool leaf;
 };
 
