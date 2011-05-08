@@ -27,7 +27,7 @@ class BoundingSphere
 {    
 public:
     BoundingSphere(vert_ls verts);
-    list<Point> recurseToDepth(int depth);
+    vert_ls recurseToDepth(int depth);
     
 private:
     Point findCenter(vert_ls verts);

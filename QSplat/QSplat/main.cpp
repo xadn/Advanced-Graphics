@@ -32,11 +32,13 @@
 using namespace std;
 
 
+unsigned int recursion_depth = 12;
+unsigned int DEPTH_INCREMENT = 2;
+
 const bool DRAW_SMOOTH = false;
 const bool DRAW_MESH = false;
 const bool DRAW_ORIGINAL_VERTICES = false;
 const bool DRAW_QSPLAT_VERTICES = true;
-unsigned int recursion_depth = 3;
 
 
 /* --------------------------------------------- */
@@ -49,7 +51,7 @@ vec3di *t;   // triangle table
 vec3dd *n;   // triangle normals
 vec3dd bbmin,bbmax;  // corners of the bounding box
 BoundingSphere* sphere_tree;
-list<Point> points_to_render;
+vert_ls points_to_render;
 
 // reading a mesh
 
@@ -135,7 +137,7 @@ void build_sphere_tree()
 {
     calc_vertex_normals_and_size();
     
-    list<Point*> verts;
+    vert_ls verts;
     
     for (int i=0; i<vertices; i++)
     {
@@ -148,7 +150,7 @@ void build_sphere_tree()
     sphere_tree = new BoundingSphere(verts);    
     timer.stop();
     
-    //cout << timer.time() << endl;
+    cout << timer.time() << endl;
     
     points_to_render = sphere_tree->recurseToDepth(recursion_depth);
 }
@@ -233,12 +235,11 @@ void draw_mesh_smooth()
     glEnd();
 }
 
-const double SCALE_FACTOR = 500;
+const double SCALE_FACTOR = 600;
 
 void draw_original_vertices()
 {
-    set_material_properties(.9,.9,.9);
-    
+    set_material_properties(.9,.9,.9);    
     
     for (int i=0; i<vertices; i++)
     {
@@ -257,12 +258,12 @@ void draw_qsplat_vertices()
 {
     set_material_properties(.9,.9,.9);
     
-    for (list<Point>::iterator it = points_to_render.begin(); it != points_to_render.end(); it++)
+    for (vert_it it = points_to_render.begin(); it != points_to_render.end(); it++)
     {
-        glPointSize((*it).size*SCALE_FACTOR);
+        glPointSize((**it).size*SCALE_FACTOR);
         glBegin(GL_POINTS);
-        glNormal3f((*it).normal[0], (*it).normal[1], (*it).normal[2]);
-        glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+        glNormal3f((**it).normal[0], (**it).normal[1], (**it).normal[2]);
+        glVertex3f((**it)[0], (**it)[1], (**it)[2]);
         glEnd();
     }
     
@@ -515,6 +516,7 @@ GLvoid button_motion(GLint x, GLint y)
     return;
 }
 
+
 /* --------------------------------------------- */
 
 /* handle keyboard events; here, just exit if ESC is hit */
@@ -528,11 +530,11 @@ GLvoid keyboard(GLubyte key, GLint x, GLint y)
             break;
             
         case 'x':
-            recursion_depth += 3;
+            recursion_depth += DEPTH_INCREMENT;
             break;
             
         case 'z':
-            recursion_depth -= 3;            
+            recursion_depth -= DEPTH_INCREMENT;            
             break;
             
         default:  

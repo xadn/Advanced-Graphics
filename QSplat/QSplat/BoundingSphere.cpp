@@ -116,17 +116,17 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
 
 
 // Return a list of nodes
-list<Point> BoundingSphere::recurseToDepth(int depth)
+vert_ls BoundingSphere::recurseToDepth(int depth)
 {
-    list<Point> vertices;
+    vert_ls vertices;
     
     if (leaf || depth <= 0) {
-        vertices.push_back(center);
+        vertices.push_back(&center);
     }
     else {
         depth--;
-        vertices = leftSubTree->recurseToDepth(depth);        
-        list<Point> rst = rightSubTree->recurseToDepth(depth);    
+        vertices = leftSubTree->recurseToDepth(depth);
+        vert_ls rst = rightSubTree->recurseToDepth(depth);    
         vertices.splice(vertices.end(), rst);
     }
     return vertices;
