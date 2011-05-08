@@ -27,16 +27,16 @@ BoundingSphere::BoundingSphere(vert_ls verts)
             break;
             
         case 1:
-            leaf = true;
-            center = *verts.front();       
+            center = *verts.front();
+            center.leaf = true;
             break;
             
         default:
-            leaf = false;
             partitions = partitionMesh(verts);
             leftSubTree = new BoundingSphere(partitions[0]);
             rightSubTree = new BoundingSphere(partitions[1]);
             center.normal = (leftSubTree->center.normal + rightSubTree->center.normal).normalize();
+            center.leaf = false;
             break;
     }
 }
@@ -107,7 +107,7 @@ vert_ls BoundingSphere::recurseToDepth(int depth)
 {
     vert_ls vertices;
     
-    if (leaf || depth == 0) {
+    if (center.leaf || depth == 0) {
         vertices.push_back(&center);
     }
     else {

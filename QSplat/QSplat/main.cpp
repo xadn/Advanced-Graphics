@@ -32,7 +32,7 @@
 using namespace std;
 
 
-unsigned int recursion_depth = -1; // 12
+unsigned int recursion_depth = 12; // 12
 unsigned int DEPTH_INCREMENT = 2;
 
 const bool DRAW_SMOOTH = false;
@@ -58,6 +58,8 @@ vert_ls points_to_render;
 
 void read_mesh ( ifstream &ifs )
 {
+    printf("reading mesh from file...\n");
+    
     int i;
     ifs >> triangles >> vertices;
     v = new Point[vertices];
@@ -72,6 +74,9 @@ void read_mesh ( ifstream &ifs )
         bbmin &= v[i];
         bbmax |= v[i];
     }
+    
+    printf("calculating triangle normals...\n");
+    
     n = new vec3dd[triangles];
     for ( i=0; i<triangles; i++ )
         n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
@@ -93,6 +98,7 @@ void calc_vertex_normals_and_size()
     // Build the table of triangles incident to each vertex
     // Calculate the area of each triangle at the same time
     // Area is 1/2(AB x AC)
+    printf("building incidence table...\n");
     for (int i=0; i<triangles; i++) {
         for (int j=0; j<3; j++) {
             incidence_table[t[i][j]].push_back(i);
@@ -102,6 +108,7 @@ void calc_vertex_normals_and_size()
     
     // Calculate the normal for each vertex from its incident triangles
     // The normal is the area weighted sum of the normals of the incident triangles
+    printf("calculating vertex normals...\n");
     for (int i=0; i<vertices; i++)
     {
         v[i].normal = vec3dd(0,0,0);
@@ -114,6 +121,7 @@ void calc_vertex_normals_and_size()
     }
     
     // Calculate the size of each leaf splat from its incident vertices
+    printf("calculating size of leaf nodes...\n");
     for (int i=0; i<vertices; i++)
     {
         for (it = incidence_table[i].begin(); it != incidence_table[i].end(); it++)
@@ -133,6 +141,19 @@ void calc_vertex_normals_and_size()
     }
 }
 
+void walk_tree()
+{
+    static Stopwatch timer;
+    timer.start();
+    
+    points_to_render = sphere_tree->recurseToDepth(recursion_depth);
+    
+    timer.stop();
+    printf("Recursed to depth %u in %f seconds\n", recursion_depth, timer.time());
+    printf("Displaying %lu splats\n", points_to_render.size() );
+    timer.reset();
+}
+
 
 void build_sphere_tree()
 {
@@ -140,20 +161,14 @@ void build_sphere_tree()
     
     vert_ls verts;
     
+    printf("creating pointers array...\n");
     for (int i=0; i<vertices; i++)
     {
         verts.push_back(&v[i]);
-    }
+    }    
     
-    Stopwatch timer;
-    
-    timer.start();
-    sphere_tree = new BoundingSphere(verts);    
-    timer.stop();
-    
-    cout << timer.time() << endl;
-    
-    points_to_render = sphere_tree->recurseToDepth(recursion_depth);
+    printf("building bounding spheres...\n");
+    sphere_tree = new BoundingSphere(verts);
 }
 
 /* --------------------------------------------- */
@@ -256,10 +271,13 @@ void draw_original_vertices()
 
 void draw_qsplat_vertices()
 {
-    set_material_properties(.9,.9,.9);
-    
     for (vert_it it = points_to_render.begin(); it != points_to_render.end(); it++)
     {
+        if ((**it).leaf)
+            set_material_properties(0,1,0);
+        else
+            set_material_properties(.9,.9,.9);
+        
         glPointSize((**it).size*SCALE_FACTOR);
         glBegin(GL_POINTS);
         glNormal3f((**it).normal[0], (**it).normal[1], (**it).normal[2]);
@@ -540,7 +558,7 @@ GLvoid keyboard(GLubyte key, GLint x, GLint y)
         default:  
             break;
     }
-    points_to_render = sphere_tree->recurseToDepth(recursion_depth);
+    walk_tree();
     glutPostRedisplay();
 }
 
@@ -575,7 +593,7 @@ GLint main(int argc, char **argv)
     
     // create a GLUT window (not drawn until glutMainLoop() is entered)
     // wid is the window ID
-    wid = glutCreateWindow("Graphics II: sample code");    
+    wid = glutCreateWindow("QSplat Implementation");    
     
     // time to register callbacks 
     
@@ -605,9 +623,19 @@ GLint main(int argc, char **argv)
         cout << "Can't open " << argv[1] << endl;
         return 0;
     }
-    read_mesh(ifs);
     
+    Stopwatch timer;
+    
+    timer.start();
+    
+    read_mesh(ifs);    
     build_sphere_tree();
+    
+    timer.stop();
+    
+    printf("\nProcessed the mesh in %f seconds\n\n", timer.time() );
+    
+    walk_tree();
     
     // this is the event loop entry:
     // take event off the queue, call the handler, repeat

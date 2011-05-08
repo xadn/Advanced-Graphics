@@ -17,6 +17,7 @@ class Point : public vec3dd
 public:
     double size;
     vec3dd normal;
+    bool leaf;
 };
 
 typedef list<Point*> vert_ls;
@@ -33,7 +34,6 @@ private:
     vert_ls* partitionMesh(vert_ls verts);
     double length(vec3dd vert);
     
-    bool leaf;
     Point center;
     
     BoundingSphere* leftSubTree;
