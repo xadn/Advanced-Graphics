@@ -30,7 +30,6 @@ public:
     vert_ls recurseToDepth(int depth);
     
 private:
-    Point findCenter(vert_ls verts);
     vert_ls* partitionMesh(vert_ls verts);
     double length(vec3dd vert);
     

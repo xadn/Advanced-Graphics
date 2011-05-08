@@ -32,7 +32,7 @@
 using namespace std;
 
 
-unsigned int recursion_depth = 12;
+unsigned int recursion_depth = -1; // 12
 unsigned int DEPTH_INCREMENT = 2;
 
 const bool DRAW_SMOOTH = false;
@@ -40,6 +40,7 @@ const bool DRAW_MESH = false;
 const bool DRAW_ORIGINAL_VERTICES = false;
 const bool DRAW_QSPLAT_VERTICES = true;
 
+const double SCALE_FACTOR = 1000;
 
 /* --------------------------------------------- */
 
@@ -235,7 +236,6 @@ void draw_mesh_smooth()
     glEnd();
 }
 
-const double SCALE_FACTOR = 600;
 
 void draw_original_vertices()
 {

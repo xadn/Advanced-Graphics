@@ -8,6 +8,7 @@
 
 #include <math.h>
 #include "BoundingSphere.h"
+//#include <boost/thread.hpp>
 
 
 
@@ -32,31 +33,12 @@ BoundingSphere::BoundingSphere(vert_ls verts)
             
         default:
             leaf = false;
-            center = findCenter(verts);
             partitions = partitionMesh(verts);
             leftSubTree = new BoundingSphere(partitions[0]);
             rightSubTree = new BoundingSphere(partitions[1]);
             center.normal = (leftSubTree->center.normal + rightSubTree->center.normal).normalize();
             break;
     }
-}
-
-
-Point BoundingSphere::findCenter(vert_ls verts)
-{
-    Point average;
-    average[0] = 0;
-    average[1] = 0;
-    average[2] = 0;
-    
-    for (vert_it it = verts.begin(); it != verts.end(); it++)
-    {
-        average += **it;
-    }
-    
-    average *= (1.0/(double)verts.size());
-    
-    return average;
 }
 
 
@@ -98,6 +80,11 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
     // Find the midpoint of the bounding box
     mid = 0.5*(max+min);
     
+    center[0] = mid[0];
+    center[1] = mid[1];
+    center[2] = mid[2];
+    
+    
     // Sort the vertices along the axis
     while ( !verts.empty() )
     {        
@@ -120,7 +107,7 @@ vert_ls BoundingSphere::recurseToDepth(int depth)
 {
     vert_ls vertices;
     
-    if (leaf || depth <= 0) {
+    if (leaf || depth == 0) {
         vertices.push_back(&center);
     }
     else {
