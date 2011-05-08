@@ -13,10 +13,6 @@
 
 BoundingSphere::BoundingSphere(vert_ls verts)
 {    
-    static int count;
-    count++;
-    //cout << "node count: " << count << endl;
-    
     vert_ls* partitions;
     
     switch (verts.size()) {
@@ -60,6 +56,18 @@ BoundingSphere::BoundingSphere(vert_ls verts)
 // Partition the mesh into equal parts
 vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
 {
+    static int count;
+    count++;
+    
+    if (count == 1) 
+    {
+        printf("Node %i\n", count);
+        for(vert_it it = verts.begin(); it != verts.end(); it++)
+        {
+            cout << **it << endl;
+        }
+    }
+
     vec3dd max(0,0,0);
     vec3dd min(0,0,0);
     vec3dd mid(0,0,0);
@@ -78,9 +86,9 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
             //cout << **it << endl;
     }
     
-    cout << verts.size() << endl;
-    cout << "max: " << max << endl;
-    cout << "min: " << min << endl;
+//    cout << verts.size() << endl;
+//    cout << "max: " << max << endl;
+//    cout << "min: " << min << endl;
     
     // Find the longest axis (x, y, z) to sort by
     double max_axis;
@@ -118,6 +126,9 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
 
         verts.pop_front();
     }
+    
+    
+    printf("node: %i, left: %lu, right %lu\n", count, partitions[0].size(), partitions[1].size() );
     
     return partitions;
 }

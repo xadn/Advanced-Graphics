@@ -42,7 +42,7 @@ const bool DRAW_QSPLAT_VERTICES = true;
 
 const double SCALE_FACTOR = 75;
 
-double sf;
+double scale_factor;
 
 /* --------------------------------------------- */
 
@@ -295,26 +295,27 @@ void blah()
 
 void draw_qsplat_vertices()
 {    
-    double* M;
-    double* P;
-    int* V;
-    
-    glGetDoublev(GL_MODELVIEW_MATRIX, M);
-    glGetDoublev(GL_PROJECTION_MATRIX, P);
-    glGetIntegerv(GL_VIEWPORT, V);
+//    double* M;
+//    double* P;
+//    int* V;
+//    
+//    glGetDoublev(GL_MODELVIEW_MATRIX, M);
+//    glGetDoublev(GL_PROJECTION_MATRIX, P);
+//    glGetIntegerv(GL_VIEWPORT, V);
     
     for (vert_it it = points_to_render.begin(); it != points_to_render.end(); it++)
     {
-        double sc[3];
+        //double sc[3];
         
-        gluProject((**it)[0], (**it)[1], (**it)[2], M, P, V, &sc[0], &sc[1], &sc[2]);
+        //gluProject((**it)[0], (**it)[1], (**it)[2], M, P, V, &sc[0], &sc[1], &sc[2]);
+        //vec3dd temp = (**it)+(**it).size;
         
         if ((**it).leaf)
             set_material_properties(0,1,0);
         else
             set_material_properties(.9,.9,.9);
         
-        glPointSize((**it).size*sf);
+        glPointSize((**it).size*scale_factor);
         glBegin(GL_POINTS);
         glNormal3f((**it).normal[0], (**it).normal[1], (**it).normal[2]);
         glVertex3f((**it)[0], (**it)[1], (**it)[2]);
@@ -330,7 +331,7 @@ void draw_scene()
     glMatrixMode(GL_MODELVIEW);
     double s = (bbmax-bbmin).max();
     
-    sf = sqrt(2.0*pow(((double)width/s), 2.0));
+    scale_factor = sqrt(2.0*pow(((double)width/s), 2.0));
     
     vec3dd mc = -0.5*(bbmax+bbmin);
     glScalef(2/s,2/s,2/s);

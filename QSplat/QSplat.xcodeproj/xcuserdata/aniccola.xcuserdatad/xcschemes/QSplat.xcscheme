@@ -56,12 +56,12 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/beethoven2.t&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/beethoven3.t"
-            isEnabled = "NO">
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/beethoven.t&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/beethoven3.t"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/subbunny5.t&#10;/Users/aniccola/Dropbox/Spring 2011/graphics/inputs&#10;/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/submodels/subbunny2.t"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
