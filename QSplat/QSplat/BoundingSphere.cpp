@@ -27,9 +27,7 @@ BoundingSphere::BoundingSphere(vert_ls verts)
             
         case 1:
             leaf = true;
-            center = *verts.front();
-            size = verts.front()->size;
-            norm = verts.front()->normal;            
+            center = *verts.front();       
             break;
             
         default:
@@ -38,27 +36,29 @@ BoundingSphere::BoundingSphere(vert_ls verts)
             partitions = partitionMesh(verts);
             leftSubTree = new BoundingSphere(partitions[0]);
             rightSubTree = new BoundingSphere(partitions[1]);
+            center.normal = (leftSubTree->center.normal + rightSubTree->center.normal).normalize();
             break;
     }
 }
 
 
-vec3dd BoundingSphere::findCenter(vert_ls verts)
+Point BoundingSphere::findCenter(vert_ls verts)
 {
-    vec3dd average(0,0,0);
+    Point average;
+    average[0] = 0;
+    average[1] = 0;
+    average[2] = 0;
     
     for (vert_it it = verts.begin(); it != verts.end(); it++)
     {
         average += **it;
     }
     
-    return (1.0/(double)verts.size())*average;
+    average *= (1.0/(double)verts.size());
+    
+    return average;
 }
 
-void BoundingSphere::splat_vertices()
-{
-    
-}
 
 // Partition the mesh into equal parts
 vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
@@ -92,13 +92,11 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
         }
     }
     
-    size = max_axis;
+    // Use the bounding box to set the size of the bounding sphere
+    center.size = 0.5*max_axis;
     
     // Find the midpoint of the bounding box
     mid = 0.5*(max+min);
-    
-    // Use the bounding box to set the size of the bounding sphere
-    size = length(max - mid);
     
     // Sort the vertices along the axis
     while ( !verts.empty() )
@@ -118,9 +116,9 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
 
 
 // Return a list of nodes
-list<vec3dd> BoundingSphere::recurseToDepth(int depth)
+list<Point> BoundingSphere::recurseToDepth(int depth)
 {
-    list<vec3dd> vertices;
+    list<Point> vertices;
     
     if (leaf || depth <= 0) {
         vertices.push_back(center);
@@ -128,7 +126,7 @@ list<vec3dd> BoundingSphere::recurseToDepth(int depth)
     else {
         depth--;
         vertices = leftSubTree->recurseToDepth(depth);        
-        list<vec3dd> rst = rightSubTree->recurseToDepth(depth);    
+        list<Point> rst = rightSubTree->recurseToDepth(depth);    
         vertices.splice(vertices.end(), rst);
     }
     return vertices;

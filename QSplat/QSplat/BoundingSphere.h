@@ -27,20 +27,15 @@ class BoundingSphere
 {    
 public:
     BoundingSphere(vert_ls verts);
-    list<vec3dd> recurseToDepth(int depth);
-    vec3dd normal() { return norm; }
+    list<Point> recurseToDepth(int depth);
     
 private:
-    vec3dd findCenter(vert_ls verts);
+    Point findCenter(vert_ls verts);
     vert_ls* partitionMesh(vert_ls verts);
     double length(vec3dd vert);
-    void splat_vertices();
     
     bool leaf;
-    double size;
-    vec3dd center;
-    vec3dd norm;
-    vec3dd splat[4];
+    Point center;
     
     BoundingSphere* leftSubTree;
     BoundingSphere* rightSubTree;

@@ -32,12 +32,11 @@
 using namespace std;
 
 
-const bool DRAW_SMOOTH = true;
-const bool DRAW_TEST = false;
+const bool DRAW_SMOOTH = false;
 const bool DRAW_MESH = false;
 const bool DRAW_ORIGINAL_VERTICES = false;
-const bool DRAW_QSPLAT_VERTICES = false;
-unsigned int recursion_depth = 1;
+const bool DRAW_QSPLAT_VERTICES = true;
+unsigned int recursion_depth = 3;
 
 
 /* --------------------------------------------- */
@@ -50,6 +49,7 @@ vec3di *t;   // triangle table
 vec3dd *n;   // triangle normals
 vec3dd bbmin,bbmax;  // corners of the bounding box
 BoundingSphere* sphere_tree;
+list<Point> points_to_render;
 
 // reading a mesh
 
@@ -125,7 +125,7 @@ void calc_vertex_normals_and_size()
                 if (len > max)
                     max = len;
             }
-            v[i].size = 0.5*max;            
+            v[i].size = 0.5*max;
         }
     }
 }
@@ -148,7 +148,9 @@ void build_sphere_tree()
     sphere_tree = new BoundingSphere(verts);    
     timer.stop();
     
-    cout << timer.time() << endl;
+    //cout << timer.time() << endl;
+    
+    points_to_render = sphere_tree->recurseToDepth(recursion_depth);
 }
 
 /* --------------------------------------------- */
@@ -195,9 +197,6 @@ GLvoid set_material_properties ( GLfloat r, GLfloat g, GLfloat b )
 /* --------------------------------------------- */
 
 
-void draw_test()
-{
-}
 
 /* --------------------------------------------- */
 
@@ -209,9 +208,10 @@ void draw_mesh()
     for (int i=0; i<triangles; i++ )
     {
         glNormal3f(n[i][0],n[i][1],n[i][2]);
-        glVertex3f(v[t[i][0]][0],v[t[i][0]][1],v[t[i][0]][2]);
-        glVertex3f(v[t[i][1]][0],v[t[i][1]][1],v[t[i][1]][2]);
-        glVertex3f(v[t[i][2]][0],v[t[i][2]][1],v[t[i][2]][2]);
+        for (int j=0; j<3; j++)
+        {
+            glVertex3f(v[t[i][j]][0],v[t[i][j]][1],v[t[i][j]][2]); 
+        }
     }
     glEnd();
 }
@@ -233,34 +233,39 @@ void draw_mesh_smooth()
     glEnd();
 }
 
+const double SCALE_FACTOR = 500;
+
 void draw_original_vertices()
 {
     set_material_properties(.9,.9,.9);
     
-    glBegin(GL_POINTS);
+    
     for (int i=0; i<vertices; i++)
     {
+        glPointSize(v[i].size*SCALE_FACTOR);
+        glBegin(GL_POINTS);
         glNormal3f(v[i].normal[0], v[i].normal[1], v[i].normal[2]);
         glVertex3f(v[i][0], v[i][1], v[i][2]);
+        glEnd();
     }
-    glEnd();
+    
 }
 
-list<vec3dd> points_to_render;
+
 
 void draw_qsplat_vertices()
 {
-    set_material_properties(0,0,1);
+    set_material_properties(.9,.9,.9);
     
-    if ( points_to_render.empty() )
-        points_to_render = sphere_tree->recurseToDepth(recursion_depth);
-    
-    glBegin(GL_POINTS);
-    for (list<vec3dd>::iterator it = points_to_render.begin(); it != points_to_render.end(); it++)
+    for (list<Point>::iterator it = points_to_render.begin(); it != points_to_render.end(); it++)
     {
+        glPointSize((*it).size*SCALE_FACTOR);
+        glBegin(GL_POINTS);
+        glNormal3f((*it).normal[0], (*it).normal[1], (*it).normal[2]);
         glVertex3f((*it)[0], (*it)[1], (*it)[2]);
+        glEnd();
     }
-    glEnd();
+    
 }
 
 
@@ -274,16 +279,12 @@ void draw_scene()
     glScalef(2/s,2/s,2/s);
     glTranslated(mc[0],mc[1],mc[2]);
     
-    glPointSize(4.0);
-    
     if (DRAW_MESH)
         draw_mesh();
     if (DRAW_ORIGINAL_VERTICES)
         draw_original_vertices();
     if (DRAW_QSPLAT_VERTICES)
         draw_qsplat_vertices();
-    if (DRAW_TEST)
-        draw_mesh();
     if (DRAW_SMOOTH)
         draw_mesh_smooth();
 }
@@ -527,11 +528,11 @@ GLvoid keyboard(GLubyte key, GLint x, GLint y)
             break;
             
         case 'x':
-            recursion_depth++;
+            recursion_depth += 3;
             break;
             
         case 'z':
-            recursion_depth--;            
+            recursion_depth -= 3;            
             break;
             
         default:  
