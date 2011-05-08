@@ -32,9 +32,25 @@ BoundingSphere::BoundingSphere(vert_ls verts)
             
         default:
             partitions = partitionMesh(verts);
-            leftSubTree = new BoundingSphere(partitions[0]);
-            rightSubTree = new BoundingSphere(partitions[1]);
-            center.normal = (leftSubTree->center.normal + rightSubTree->center.normal).normalize();
+            
+            //cout << partitions[0].size() << endl;
+            //cout << partitions[1].size() << endl;
+            
+            if (!partitions[0].empty())
+                leftSubTree = new BoundingSphere(partitions[0]);
+            if (!partitions[1].empty())
+                rightSubTree = new BoundingSphere(partitions[1]);
+            
+            if (leftSubTree && rightSubTree)
+                center.normal = (leftSubTree->center.normal + rightSubTree->center.normal).normalize();
+            else if (leftSubTree)
+                center.normal = leftSubTree->center.normal;
+            else if(rightSubTree)
+                center.normal = rightSubTree->center.normal;
+            else
+                center.normal = vec3dd(0,0,0);
+                
+                
             center.leaf = false;
             break;
     }
@@ -58,7 +74,13 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
     {
         max |= **it;
         min &= **it;
+        
+            //cout << **it << endl;
     }
+    
+    cout << verts.size() << endl;
+    cout << "max: " << max << endl;
+    cout << "min: " << min << endl;
     
     // Find the longest axis (x, y, z) to sort by
     double max_axis;
@@ -74,7 +96,7 @@ vert_ls* BoundingSphere::partitionMesh(vert_ls verts)
     }
     
     // Use the bounding box to set the size of the bounding sphere
-    center.size = 0.5*max_axis;
+    center.size = sqrt(2.0*pow(0.5*length(distance), 2));
     
     // Find the midpoint of the bounding box
     mid = 0.5*(max+min);

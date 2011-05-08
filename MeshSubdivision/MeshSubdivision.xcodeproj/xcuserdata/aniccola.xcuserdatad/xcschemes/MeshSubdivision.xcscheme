@@ -49,11 +49,15 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/inputs/foot1.t"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "3"
             isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/aniccola/Dropbox/Spring\ 2011/graphics/models/motorcycleb.t"
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>

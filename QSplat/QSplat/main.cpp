@@ -42,6 +42,8 @@ const bool DRAW_QSPLAT_VERTICES = true;
 
 const double SCALE_FACTOR = 75;
 
+double sf;
+
 /* --------------------------------------------- */
 
 // mesh data
@@ -55,6 +57,11 @@ BoundingSphere* sphere_tree;
 vert_ls points_to_render;
 
 // reading a mesh
+
+double length(vec3dd vert)
+{
+    return sqrt(vert[0]*vert[0]+vert[1]*vert[1]+vert[2]*vert[2]);
+}
 
 void read_mesh ( ifstream &ifs )
 {
@@ -80,12 +87,6 @@ void read_mesh ( ifstream &ifs )
     n = new vec3dd[triangles];
     for ( i=0; i<triangles; i++ )
         n[i] = (v[t[i][1]]-v[t[i][0]])^(v[t[i][2]]-v[t[i][0]]);
-}
-
-
-double length(vec3dd vert)
-{
-    return sqrt(vert[0]*vert[0]+vert[1]*vert[1]+vert[2]*vert[2]);
 }
 
 
@@ -267,24 +268,58 @@ void draw_original_vertices()
     
 }
 
-
+void blah()
+{
+//    double zproj[4];
+//    double M[16];
+//    double P[16];
+//    
+//    glGetDoublev(GL_MODELVIEW_MATRIX, M);
+//    glGetDoublev(GL_PROJECTION_MATRIX, P);
+//    
+//    zproj[0] = -M[2];
+//	zproj[1] = -M[6];
+//	zproj[2] = -M[10];
+//	zproj[3] = -M[14];
+//    
+//    double pixels_per_radian = 0.5 * width * P[0];
+//    double z = zproj[0] * (**it)[0] + zproj[1] * (**it)[1] + zproj[2] * (**it)[2] + zproj[3];
+    // for loop
+//    cout << z << endl;
+    //        double splatsize_scale = 2.3 * pixels_per_radian / z;
+    //        
+    //		double splatsize = (**it).size * splatsize_scale;
+    //        glPointSize(splatsize);
+    //end for
+}
 
 void draw_qsplat_vertices()
-{
+{    
+    double* M;
+    double* P;
+    int* V;
+    
+    glGetDoublev(GL_MODELVIEW_MATRIX, M);
+    glGetDoublev(GL_PROJECTION_MATRIX, P);
+    glGetIntegerv(GL_VIEWPORT, V);
+    
     for (vert_it it = points_to_render.begin(); it != points_to_render.end(); it++)
     {
+        double sc[3];
+        
+        gluProject((**it)[0], (**it)[1], (**it)[2], M, P, V, &sc[0], &sc[1], &sc[2]);
+        
         if ((**it).leaf)
             set_material_properties(0,1,0);
         else
             set_material_properties(.9,.9,.9);
         
-        glPointSize((**it).size*SCALE_FACTOR);
+        glPointSize((**it).size*sf);
         glBegin(GL_POINTS);
         glNormal3f((**it).normal[0], (**it).normal[1], (**it).normal[2]);
         glVertex3f((**it)[0], (**it)[1], (**it)[2]);
         glEnd();
-    }
-    
+    }   
 }
 
 
@@ -294,6 +329,9 @@ void draw_scene()
     
     glMatrixMode(GL_MODELVIEW);
     double s = (bbmax-bbmin).max();
+    
+    sf = sqrt(2.0*pow(((double)width/s), 2.0));
+    
     vec3dd mc = -0.5*(bbmax+bbmin);
     glScalef(2/s,2/s,2/s);
     glTranslated(mc[0],mc[1],mc[2]);
