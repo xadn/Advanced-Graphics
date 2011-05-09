@@ -35,10 +35,9 @@ using namespace std;
 unsigned int recursion_depth = 12; // 12
 unsigned int DEPTH_INCREMENT = 2;
 
-const bool DRAW_QSPLAT = false;
-const bool DRAW_LEAVES = true;
-const bool DRAW_SMOOTH = false;
-const bool DRAW_MESH = false;
+enum RENDER_MODES {QSPLAT, LEAVES, SMOOTH, MESH};
+
+RENDER_MODES render_mode = QSPLAT;
 
 
 const double SCALE_FACTOR = 75;
@@ -285,45 +284,6 @@ void walk_tree()
 /* --------------------------------------------- */
 
 
-void blah()
-{
-//    double zproj[4];
-//    double M[16];
-//    double P[16];
-//    
-//    glGetDoublev(GL_MODELVIEW_MATRIX, M);
-//    glGetDoublev(GL_PROJECTION_MATRIX, P);
-//    
-//    zproj[0] = -M[2];
-//	zproj[1] = -M[6];
-//	zproj[2] = -M[10];
-//	zproj[3] = -M[14];
-//    
-//    double pixels_per_radian = 0.5 * width * P[0];
-//    double z = zproj[0] * (**it)[0] + zproj[1] * (**it)[1] + zproj[2] * (**it)[2] + zproj[3];
-    // for loop
-//    cout << z << endl;
-    //        double splatsize_scale = 2.3 * pixels_per_radian / z;
-    //        
-    //		double splatsize = (**it).size * splatsize_scale;
-    //        glPointSize(splatsize);
-    //end for
-    
-    //    double* M;
-    //    double* P;
-    //    int* V;
-    //    
-    //    glGetDoublev(GL_MODELVIEW_MATRIX, M);
-    //    glGetDoublev(GL_PROJECTION_MATRIX, P);
-    //    glGetIntegerv(GL_VIEWPORT, V);
-    
-    //double sc[3];
-    
-    
-    //gluProject((**it)[0], (**it)[1], (**it)[2], M, P, V, &sc[0], &sc[1], &sc[2]);
-    //vec3dd temp = (**it)+(**it).size;
-}
-
 void draw_mesh()
 {
     set_material_properties(.9,.9,.9);
@@ -407,14 +367,20 @@ void draw_scene()
     glScalef(2/s,2/s,2/s);
     glTranslated(mc[0],mc[1],mc[2]);
     
-    if (DRAW_QSPLAT)
-        draw_splats();
-    else if (DRAW_LEAVES)
-        draw_splats_colors();
-    else if (DRAW_SMOOTH)
-        draw_mesh_smooth();
-    else if (DRAW_MESH)
-        draw_mesh();
+    switch (render_mode) {
+        case QSPLAT:
+            draw_splats();
+            break;
+        case LEAVES:
+            draw_splats_colors();
+            break;
+        case SMOOTH:
+            draw_mesh_smooth();
+            break;
+        case MESH:
+            draw_mesh();
+            break;
+    }
 }
 
 /* --------------------------------------------- */
@@ -664,6 +630,14 @@ GLvoid keyboard(GLubyte key, GLint x, GLint y)
             recursion_depth -= DEPTH_INCREMENT;            
             break;
             
+        case '=':
+            zoom -= 1;
+            break;
+            
+        case '-':
+            zoom += 1;
+            break;
+            
         default:  
             break;
     }
@@ -684,6 +658,38 @@ GLvoid reshape(GLint vpw, GLint vph)
     glutReshapeWindow(width, height);
     
     glutPostRedisplay();   // add display event to queue
+}
+
+void menu_callback(int button)
+{
+    switch (button) {
+        case 1:
+            render_mode = QSPLAT;
+            break;
+        case 2:
+            render_mode = LEAVES;
+            break;         
+        case 3:
+            render_mode = SMOOTH;
+            break;
+        case 4:
+            render_mode = MESH;
+            break;
+    }
+    glutPostRedisplay();
+}
+
+
+void create_menu()
+{
+    
+    glutCreateMenu(menu_callback);
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+    glutAddMenuEntry("Regular splats", 1);
+    glutAddMenuEntry("Highlight leaves", 2);
+    glutAddMenuEntry("Smooth shaded", 3);
+    glutAddMenuEntry("Flat shaded", 4);
+    
 }
 
 /* --------------------------------------------- */
@@ -746,6 +752,7 @@ GLint main(int argc, char **argv)
     
     walk_tree();
     
+    create_menu();
     // this is the event loop entry:
     // take event off the queue, call the handler, repeat
     glutMainLoop();
